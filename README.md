@@ -5,15 +5,15 @@
 [Install](#install-and-run) · [Actions and safety](#actions-and-safety) · [Evaluation](docs/EVALUATION.md) · [Changelog](CHANGELOG.md)
 
 ```text
-$ tf почему мак тормозит
+$ tf why is my Mac slow
 Top processes by CPU
    PID     CPU      MEM       RSS  COMMAND
    377    16.8%     0.7%     121.1 MiB  WindowServer
 
-$ tf кому принадлежит PID 46272
+$ tf what owns PID 46272
 PID 46272 · /Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge
 
-$ tf выключи блютуз
+$ tf turn off Bluetooth
 Turn Bluetooth off
 Continue? [y/N]
 ```
@@ -92,7 +92,7 @@ tf ¿cuánta batería me queda?
 HTTP GET requests honor curl's standard `https_proxy`, lowercase `http_proxy`, `ALL_PROXY`, and `NO_PROXY` environment variables. Proxy selection is intentionally not accepted as free-form curl flags:
 
 ```sh
-env HTTPS_PROXY=http://127.0.0.1:8080 tf отправь запрос на https://example.com
+env HTTPS_PROXY=http://127.0.0.1:8080 tf send a request to https://example.com
 env ALL_PROXY=socks5h://127.0.0.1:1080 tf fetch example.com
 ```
 
@@ -105,7 +105,7 @@ Add verbs or short phrases under one of the canonical groups `open`, `delete`, `
 ```json
 {
   "version": 1,
-  "prefixes": ["please", "можешь", "por favor"],
+  "prefixes": ["please", "could you", "kindly"],
   "terms": {
     "open": ["подними", "activate"],
     "find": ["разыщи", "track down"],
@@ -120,11 +120,11 @@ Add verbs or short phrases under one of the canonical groups `open`, `delete`, `
 
 Term groups and rules ignore capitalization and surrounding punctuation. Rules match the complete request and apply at most once. Neither mechanism can invoke a shell: the rewritten text still has to map to a registered typed action, target checks, risk classification, and confirmation. `tf remember` and `knowledge.json` are maintainer overrides, not part of the normal user flow.
 
-Running `tf` with no arguments starts an interactive prompt. After viewing a port listener, `убей его` or `kill it` prepares a confirmed SIGTERM action. After finding apps, `первый` / `второй` selects one for `удали его`. Type `exit` or press Ctrl-D to leave. Context is only held in memory for that session.
+Running `tf` with no arguments starts an interactive prompt. After viewing a port listener, `kill it` prepares a confirmed SIGTERM action. After finding apps, `first` / `second` selects one for `delete it`. Type `exit` or press Ctrl-D to leave. Context is only held in memory for that session.
 
 ## Actions and safety
 
-The current Rust executors locate, open, and quit apps, find/open/delete/move/rename/copy files, list and create directories, print file contents, resolve `cd`, open URLs, make bounded HTTP/HTTPS GET requests, calculate directory size, find large files, inspect processes and TCP listeners, send SIGTERM to a PID or a port's single listener, clear named pip/npm/yarn/pnpm/Homebrew caches, show disk usage, battery charge, date, user, hostname, macOS version, uptime, memory, CPU, and local network addresses, and control Bluetooth power, AirDrop receiving, and Stage Manager. HTTP requests accept either a full URL or a normal domain such as `google.com` (automatically upgraded to `https://google.com`), restrict the initial request and redirects to HTTP(S), use connection and total timeouts, and cap the response at 5 MiB; flags, request bodies, credentials in URLs, and POST/PUT/PATCH/DELETE are refused. Turning AirDrop on also enables Wi-Fi and Bluetooth when needed; a plain `включи AirDrop` preserves the current receiving audience, or defaults to Contacts Only when receiving was off. A bare name such as `tf telegram` or `tf .` opens the matching app, folder, file, or URL. App lookup tolerates spoken aliases and one-typo names, so `открой телеграм`, `запусти telegram`, and `открой настройки` resolve to real bundles; an ambiguous match asks which one. Quitting an app sends SIGTERM to every process inside its bundle after each PID is rechecked, and is treated as a destructive action. App and file deletion moves the item to `~/.Trash`; it does not perform permanent deletion. Filesystem scans have entry limits. App lookup is restricted to `/Applications`, `~/Applications`, and `/System/Applications`. File name lookup checks the current directory and the top level of Desktop, Documents, and Downloads.
+The current Rust executors locate, open, and quit apps, find/open/delete/move/rename/copy files, list and create directories, print file contents, resolve `cd`, open URLs, make bounded HTTP/HTTPS GET requests, calculate directory size, find large files, inspect processes and TCP listeners, send SIGTERM to a PID or a port's single listener, clear named pip/npm/yarn/pnpm/Homebrew caches, show disk usage, battery charge, date, user, hostname, macOS version, uptime, memory, CPU, and local network addresses, and control Bluetooth power, AirDrop receiving, and Stage Manager. HTTP requests accept either a full URL or a normal domain such as `google.com` (automatically upgraded to `https://google.com`), restrict the initial request and redirects to HTTP(S), use connection and total timeouts, and cap the response at 5 MiB; flags, request bodies, credentials in URLs, and POST/PUT/PATCH/DELETE are refused. Turning AirDrop on also enables Wi-Fi and Bluetooth when needed; a plain `turn on AirDrop` preserves the current receiving audience, or defaults to Contacts Only when receiving was off. A bare name such as `tf telegram` or `tf .` opens the matching app, folder, file, or URL. App lookup tolerates spoken aliases and one-typo names, so `open Telegram`, `launch telegram`, and `open settings` resolve to real bundles; an ambiguous match asks which one. Quitting an app sends SIGTERM to every process inside its bundle after each PID is rechecked, and is treated as a destructive action. App and file deletion moves the item to `~/.Trash`; it does not perform permanent deletion. Filesystem scans have entry limits. App lookup is restricted to `/Applications`, `~/Applications`, and `/System/Applications`. File name lookup checks the current directory and the top level of Desktop, Documents, and Downloads.
 
 All mutations display a plan and require confirmation unless `--yes` is given for an ordinary destructive action. `--dry-run` displays the resolved plan without executing it. Ambiguous targets require a selection; dry run refuses to pick one. There is no `sh -c`, `eval`, or arbitrary command executor. Supported cache handlers invoke a fixed program with fixed arguments. PID 0, PID 1, the CLI's own PID, and its parent PID are protected. Broad roots such as `/`, `/Applications`, `/System`, `/Library`, `/Users`, and the home directory cannot be moved to Trash.
 
