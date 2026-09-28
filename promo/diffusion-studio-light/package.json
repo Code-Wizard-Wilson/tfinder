@@ -1,0 +1,53 @@
+{
+  "name": "diffusion-studio-light",
+  "projectId": "HDJRXazI7WmP0a5rN48lj",
+  "displayName": "TFinder — light tactile launch film",
+  "private": true,
+  "type": "module",
+  "main": "index.tsx",
+  "scripts": {
+    "open": "dapi open .",
+    "context": "dapi context",
+    "capture": "dapi capture",
+    "probe": "dapi media probe",
+    "transcribe": "dapi media transcribe",
+    "grab": "dapi media grab",
+    "filmstrip": "dapi media filmstrip",
+    "waveform": "dapi media waveform",
+    "listen": "dapi media listen",
+    "models": "dapi models",
+    "voices": "dapi voices",
+    "fonts": "dapi fonts",
+    "whoami": "dapi whoami",
+    "logs": "dapi logs",
+    "screenshot": "dapi screenshot",
+    "report": "dapi report"
+  },
+  "devDependencies": {
+    "@diffusionstudio/jsx": "latest",
+    "solid-js": "^1.9.10"
+  },
+  "dependencies": {
+    "animejs": "^4.5.0"
+  },
+  "diffusion": {
+    "export": {
+      "tfinder-light-promo": {
+        "format": "mp4",
+        "video": {
+          "enabled": true,
+          "codec": "avc",
+          "bitrate": 24000000,
+          "fps": 60,
+          "resolution": 2160
+        },
+        "audio": {
+          "enabled": true,
+          "codec": "aac",
+          "sampleRate": 48000,
+          "bitrate": 192000
+        }
+      }
+    }
+  }
+}

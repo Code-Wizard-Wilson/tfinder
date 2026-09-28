@@ -1,0 +1,16 @@
+# Diffusion Studio asset library. Edited by the app; hand edits are read on the next load.
+version: 1
+folders: []
+assets:
+  - id: c624deaf00f3f92b
+    path: tfinder-light-bed-final.wav
+    source: assets/tfinder-light-bed-final.wav
+    createdAt: 2026-09-28T14:19:31.464Z
+    mimeType: audio/wav
+    stat:
+      size: 5760102
+      mtime: 1790605154504
+    type: AUDIO
+    duration: 20
+    sampleRate: 48000
+    channels: 2

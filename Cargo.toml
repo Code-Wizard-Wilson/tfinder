@@ -1,0 +1,45 @@
+[package]
+name = "terfinder"
+version = "0.6.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT"
+description = "Local, fast natural-language macOS utility"
+readme = "README.md"
+keywords = ["macos", "cli", "natural-language", "automation"]
+categories = ["command-line-utilities"]
+include = [
+    "/Cargo.toml",
+    "/Cargo.lock",
+    "/LICENSE",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/src/**",
+    "/daemon/*.py",
+    "/daemon/*.txt",
+    "/daemon/README.md",
+    "/knowledge/**",
+    "/scripts/*.sh",
+    "/scripts/*.py",
+    "/tests/**",
+    "/docs/**",
+]
+
+[[bin]]
+name = "tf"
+path = "src/main.rs"
+
+[[bin]]
+name = "terfinder"
+path = "src/bin/terfinder.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

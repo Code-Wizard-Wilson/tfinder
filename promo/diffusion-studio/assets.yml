@@ -1,0 +1,16 @@
+# Diffusion Studio asset library. Edited by the app; hand edits are read on the next load.
+version: 1
+folders: []
+assets:
+  - id: c4ce1e738e9c7aef
+    path: terfinder-bed.wav
+    source: assets/terfinder-bed.wav
+    createdAt: 2026-09-28T13:33:57.069Z
+    mimeType: audio/wav
+    stat:
+      size: 7200102
+      mtime: 1790602436917
+    type: AUDIO
+    duration: 25
+    sampleRate: 48000
+    channels: 2

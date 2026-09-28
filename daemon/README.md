@@ -1,0 +1,3 @@
+The Rust CLI starts this Python process only for requests that its fast parser cannot classify. It talks over a user-private Unix socket and exits after 600 seconds without a model request. `python3 -m venv daemon/.venv && daemon/.venv/bin/pip install -r daemon/requirements.txt` prepares the runtime. The first model request may download `aac6fef/laya-multilingual-mlx`; later inference is local. Set `TERFINDER_PYTHON` to the virtual environment's Python path when running `tf`.
+
+Laya-MLX 0.1.0 is a typed decision model. It selects from the Rust capability registry and abstains; it does not generate shell commands or inspect the machine. The Rust side extracts entities and checks all actual targets. The current integration needs a working Apple Metal device.

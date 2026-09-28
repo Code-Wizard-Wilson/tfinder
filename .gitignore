@@ -1,0 +1,17 @@
+/target/
+/daemon/.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+/.mcp-agent/
+/working.txt
+
+# JS dependencies and generated promo caches
+node_modules/
+**/node_modules/
+**/cache/
+
+# JS dependencies and generated promo caches
+node_modules/
+**/node_modules/
+**/cache/

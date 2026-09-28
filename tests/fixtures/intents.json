@@ -1,0 +1,1318 @@
+[
+  {
+    "input": "удали Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "снеси Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "убери Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "выкинь Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "хочу удалить Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "удали приложение Google Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "remove Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "uninstall Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "get rid of Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "удали Google Chrome app",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "I would like to remove Google Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "change default browser to Google Chrome",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "SET_DEFAULT_BROWSER"
+    }
+  },
+  {
+    "input": "enable Google Chrome at login",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "ENABLE_LOGIN_ITEM"
+    }
+  },
+  {
+    "input": "кто на 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "кто сидит на 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "что занимает 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "что держит порт 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "какой процесс слушает 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "who uses port 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "what is listening on 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "what's on port 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "порт 3000",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "port 5173",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "убей процесс на 8765",
+    "expected_goal": "KILL_PORT_PROCESS"
+  },
+  {
+    "input": "освободи порт 8765",
+    "expected_goal": "KILL_PORT_PROCESS"
+  },
+  {
+    "input": "выключи то что сидит на 8765",
+    "expected_goal": "KILL_PORT_PROCESS"
+  },
+  {
+    "input": "kill process on port 8765",
+    "expected_goal": "KILL_PORT_PROCESS"
+  },
+  {
+    "input": "free port 8765",
+    "expected_goal": "KILL_PORT_PROCESS"
+  },
+  {
+    "input": "stop whatever is listening on 8765",
+    "expected_goal": "KILL_PORT_PROCESS"
+  },
+  {
+    "input": "грохни процесс на порту 3000",
+    "expected_goal": "KILL_PORT_PROCESS"
+  },
+  {
+    "input": "kill порт 8080",
+    "expected_goal": "KILL_PORT_PROCESS"
+  },
+  {
+    "input": "найди python",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "find python",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "найди процессы python",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "find process node",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "покажи процессы rustc",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "где python",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "locate npm",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "найти git",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "сколько весит Downloads",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "размер Downloads",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "size Downloads",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "du Downloads",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "сколько весит Desktop",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "how large is Documents",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "покажи размер папки Downloads",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "у меня Downloads занимает много места",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "открой hosts",
+    "expected_goal": "OPEN_FILE"
+  },
+  {
+    "input": "open hosts",
+    "expected_goal": "OPEN_FILE"
+  },
+  {
+    "input": "открой report.pdf",
+    "expected_goal": "OPEN_FILE"
+  },
+  {
+    "input": "open package.json",
+    "expected_goal": "OPEN_FILE"
+  },
+  {
+    "input": "открыть /etc/hosts",
+    "expected_goal": "OPEN_FILE"
+  },
+  {
+    "input": "open ~/Downloads/file.txt",
+    "expected_goal": "OPEN_FILE"
+  },
+  {
+    "input": "найди report.pdf",
+    "expected_goal": "FIND_FILE"
+  },
+  {
+    "input": "где package.json",
+    "expected_goal": "FIND_FILE"
+  },
+  {
+    "input": "find budget.csv",
+    "expected_goal": "FIND_FILE"
+  },
+  {
+    "input": "where is settings.json",
+    "expected_goal": "FIND_FILE"
+  },
+  {
+    "input": "locate notes.txt",
+    "expected_goal": "FIND_FILE"
+  },
+  {
+    "input": "найти ~/Downloads/test.pdf",
+    "expected_goal": "FIND_FILE"
+  },
+  {
+    "input": "перемести test.txt на Desktop",
+    "expected_goal": "MOVE_FILE"
+  },
+  {
+    "input": "move test.txt to Desktop",
+    "expected_goal": "MOVE_FILE"
+  },
+  {
+    "input": "перемести report.pdf в Documents",
+    "expected_goal": "MOVE_FILE"
+  },
+  {
+    "input": "move a.txt into Downloads",
+    "expected_goal": "MOVE_FILE"
+  },
+  {
+    "input": "перемести sample.csv на ~/Desktop",
+    "expected_goal": "MOVE_FILE"
+  },
+  {
+    "input": "переименуй a.txt в b.txt",
+    "expected_goal": "RENAME_FILE"
+  },
+  {
+    "input": "rename a.txt to b.txt",
+    "expected_goal": "RENAME_FILE"
+  },
+  {
+    "input": "переименуй old.csv на new.csv",
+    "expected_goal": "RENAME_FILE"
+  },
+  {
+    "input": "rename draft.md to final.md",
+    "expected_goal": "RENAME_FILE"
+  },
+  {
+    "input": "очисти кеш pip",
+    "expected_goal": "CLEAR_CACHE"
+  },
+  {
+    "input": "clear pip cache",
+    "expected_goal": "CLEAR_CACHE"
+  },
+  {
+    "input": "почисти кеш npm",
+    "expected_goal": "CLEAR_CACHE"
+  },
+  {
+    "input": "clean npm cache",
+    "expected_goal": "CLEAR_CACHE"
+  },
+  {
+    "input": "очисти кэш yarn",
+    "expected_goal": "CLEAR_CACHE"
+  },
+  {
+    "input": "clear pnpm cache",
+    "expected_goal": "CLEAR_CACHE"
+  },
+  {
+    "input": "почисти кеш homebrew",
+    "expected_goal": "CLEAR_CACHE"
+  },
+  {
+    "input": "disk usage",
+    "expected_goal": "SHOW_DISK_USAGE"
+  },
+  {
+    "input": "место на диске",
+    "expected_goal": "SHOW_DISK_USAGE"
+  },
+  {
+    "input": "покажи место на диске",
+    "expected_goal": "SHOW_DISK_USAGE"
+  },
+  {
+    "input": "how much free space",
+    "expected_goal": "SHOW_DISK_USAGE"
+  },
+  {
+    "input": "сколько свободно на диске",
+    "expected_goal": "SHOW_DISK_USAGE"
+  },
+  {
+    "input": "найди файлы больше 1 гб в Downloads",
+    "expected_goal": "FIND_LARGE_FILES"
+  },
+  {
+    "input": "find files over 500 mb in Documents",
+    "expected_goal": "FIND_LARGE_FILES"
+  },
+  {
+    "input": "покажи файлы больше 200 мб в Desktop",
+    "expected_goal": "FIND_LARGE_FILES"
+  },
+  {
+    "input": "найди большие видео за месяц в Downloads",
+    "expected_goal": "FIND_LARGE_FILES",
+    "expected_fields": {
+      "target": "Downloads",
+      "file_type": "VIDEO",
+      "max_age_days": 30
+    }
+  },
+  {
+    "input": "show largest files in Downloads",
+    "expected_goal": "FIND_LARGE_FILES"
+  },
+  {
+    "input": "сделай Firefox браузером по умолчанию",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "SET_DEFAULT_BROWSER"
+    }
+  },
+  {
+    "input": "download latest Ubuntu ISO",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "DOWNLOAD_FILE"
+    }
+  },
+  {
+    "input": "поставь мне Docker",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "INSTALL_APP"
+    }
+  },
+  {
+    "input": "обнови macOS",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "UPDATE_OS"
+    }
+  },
+  {
+    "input": "change default browser to Firefox",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "SET_DEFAULT_BROWSER"
+    }
+  },
+  {
+    "input": "запрети Discord запускаться при входе",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "DISABLE_LOGIN_ITEM"
+    }
+  },
+  {
+    "input": "send an email to Alex",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "SEND_EMAIL"
+    }
+  },
+  {
+    "input": "создай новый аккаунт",
+    "expected_goal": "UNSUPPORTED",
+    "expected_fields": {
+      "semantic_goal": "CREATE_ACCOUNT"
+    }
+  },
+  {
+    "input": "найди кто сидит на 8765 и выключи его",
+    "expected_goal": "MULTI_STEP"
+  },
+  {
+    "input": "найди Chrome и покажи сколько он весит потом спроси хочу ли удалить",
+    "expected_goal": "MULTI_STEP"
+  },
+  {
+    "input": "find Chrome then uninstall it",
+    "expected_goal": "MULTI_STEP"
+  },
+  {
+    "input": "убей процесс на 8765 и проверь порт",
+    "expected_goal": "MULTI_STEP"
+  },
+  {
+    "input": "найди самые большие файлы и удали их",
+    "expected_goal": "MULTI_STEP"
+  },
+  {
+    "input": "открой hosts а потом запусти Chrome",
+    "expected_goal": "MULTI_STEP"
+  },
+  {
+    "input": "удали хромм",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "покажи проццесы python",
+    "expected_goal": "FIND_PROCESS"
+  },
+  {
+    "input": "кто сдит на порту 8765",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "clera npm cache",
+    "expected_goal": "CLEAR_CACHE"
+  },
+  {
+    "input": "remvoe Chrome",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "сниси дискорд",
+    "expected_goal": "REMOVE_APP"
+  },
+  {
+    "input": "whos on port 3000",
+    "expected_goal": "FIND_PORT_PROCESS"
+  },
+  {
+    "input": "удли test.txt",
+    "expected_goal": "DELETE_FILE"
+  },
+  {
+    "input": "открой telegram",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "запусти телеграм",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "open Safari",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "launch Figma",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "открой настройки",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "запусти приложение Figma",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "закрой telegram",
+    "expected_goal": "QUIT_APP"
+  },
+  {
+    "input": "close Telegram",
+    "expected_goal": "QUIT_APP"
+  },
+  {
+    "input": "quit Safari",
+    "expected_goal": "QUIT_APP"
+  },
+  {
+    "input": "останови Discord",
+    "expected_goal": "QUIT_APP"
+  },
+  {
+    "input": "заверши Figma",
+    "expected_goal": "QUIT_APP"
+  },
+  {
+    "input": "открой youtube.com",
+    "expected_goal": "OPEN_FILE"
+  },
+  {
+    "input": "закрой приложение Figma",
+    "expected_goal": "QUIT_APP"
+  },
+  {
+    "input": "покажи самые большие файлы на рабочем столе",
+    "expected_goal": "FIND_LARGE_FILES"
+  },
+  {
+    "input": "show largest files on the desktop",
+    "expected_goal": "FIND_LARGE_FILES"
+  },
+  {
+    "input": "найди большие файлы на столе",
+    "expected_goal": "FIND_LARGE_FILES"
+  },
+  {
+    "input": "сколько весит рабочий стол",
+    "expected_goal": "DIRECTORY_SIZE"
+  },
+  {
+    "input": "ls",
+    "expected_goal": "LIST_DIRECTORY"
+  },
+  {
+    "input": "pwd",
+    "expected_goal": "PRINT_WORKING_DIRECTORY"
+  },
+  {
+    "input": "cat README.md",
+    "expected_goal": "READ_FILE"
+  },
+  {
+    "input": "mkdir notes",
+    "expected_goal": "CREATE_DIRECTORY"
+  },
+  {
+    "input": "cp a.txt b.txt",
+    "expected_goal": "COPY_FILE"
+  },
+  {
+    "input": "cd Downloads",
+    "expected_goal": "CHANGE_DIRECTORY"
+  },
+  {
+    "input": "whoami",
+    "expected_goal": "WHO_AM_I"
+  },
+  {
+    "input": "date",
+    "expected_goal": "SHOW_DATE"
+  },
+  {
+    "input": "hostname",
+    "expected_goal": "SHOW_HOSTNAME"
+  },
+  {
+    "input": "покажи файлы",
+    "expected_goal": "LIST_DIRECTORY"
+  },
+  {
+    "input": "list files in Downloads",
+    "expected_goal": "LIST_DIRECTORY",
+    "expected_fields": {
+      "target": "Downloads"
+    }
+  },
+  {
+    "input": "где я",
+    "expected_goal": "PRINT_WORKING_DIRECTORY"
+  },
+  {
+    "input": "abre telegram",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "öffne safari",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "ouvre chrome",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "відкрий telegram",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "打开 Safari",
+    "expected_goal": "OPEN_APP"
+  },
+  {
+    "input": "создай папку notes",
+    "expected_goal": "CREATE_DIRECTORY"
+  },
+  {
+    "input": "скопируй a.txt на Desktop",
+    "expected_goal": "COPY_FILE"
+  },
+  {
+    "input": "перейди в Downloads",
+    "expected_goal": "CHANGE_DIRECTORY"
+  },
+  {
+    "input": "где конфиг для opencode",
+    "expected_goal": "FIND_FILE",
+    "expected_fields": {
+      "target": "opencode"
+    }
+  },
+  {
+    "input": "where is the git config",
+    "expected_goal": "FIND_FILE",
+    "expected_fields": {
+      "target": "git"
+    }
+  },
+  {
+    "input": "открой конфиг opencode",
+    "expected_goal": "OPEN_FILE",
+    "expected_fields": {
+      "target": "opencode"
+    }
+  },
+  {
+    "input": "opencode config",
+    "expected_goal": "FIND_FILE",
+    "expected_fields": {
+      "target": "opencode"
+    }
+  },
+  {
+    "input": "git status",
+    "expected_goal": "RUN_TOOL",
+    "expected_fields": {
+      "target": "git"
+    }
+  },
+  {
+    "input": "brew outdated",
+    "expected_goal": "RUN_TOOL",
+    "expected_fields": {
+      "target": "brew"
+    }
+  },
+  {
+    "input": "можешь врубить телеграм",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "телеграм"
+    }
+  },
+  {
+    "input": "выруби Discord",
+    "expected_goal": "QUIT_APP",
+    "expected_fields": {
+      "target": "Discord"
+    }
+  },
+  {
+    "input": "покажи что лежит в Downloads",
+    "expected_goal": "LIST_DIRECTORY",
+    "expected_fields": {
+      "target": "Downloads"
+    }
+  },
+  {
+    "input": "что находится в Documents",
+    "expected_goal": "LIST_DIRECTORY",
+    "expected_fields": {
+      "target": "Documents"
+    }
+  },
+  {
+    "input": "куда я сейчас зашел",
+    "expected_goal": "PRINT_WORKING_DIRECTORY"
+  },
+  {
+    "input": "в какой я папке",
+    "expected_goal": "PRINT_WORKING_DIRECTORY"
+  },
+  {
+    "input": "что сейчас запущено",
+    "expected_goal": "LIST_PROCESSES"
+  },
+  {
+    "input": "чем занят порт 5173",
+    "expected_goal": "FIND_PORT_PROCESS",
+    "expected_fields": {
+      "port": 5173
+    }
+  },
+  {
+    "input": "прибей процесс на 8080",
+    "expected_goal": "KILL_PORT_PROCESS",
+    "expected_fields": {
+      "port": 8080
+    }
+  },
+  {
+    "input": "освободи 3000-й порт",
+    "expected_goal": "KILL_PORT_PROCESS",
+    "expected_fields": {
+      "port": 3000
+    }
+  },
+  {
+    "input": "отыщи package.json",
+    "expected_goal": "FIND_FILE",
+    "expected_fields": {
+      "target": "package.json"
+    }
+  },
+  {
+    "input": "выведи содержимое файла README.md",
+    "expected_goal": "READ_FILE",
+    "expected_fields": {
+      "target": "README.md"
+    }
+  },
+  {
+    "input": "сделай копию a.txt в b.txt",
+    "expected_goal": "COPY_FILE",
+    "expected_fields": {
+      "source": "a.txt",
+      "destination": "b.txt"
+    }
+  },
+  {
+    "input": "положи a.txt в Downloads",
+    "expected_goal": "MOVE_FILE",
+    "expected_fields": {
+      "source": "a.txt",
+      "destination": "Downloads"
+    }
+  },
+  {
+    "input": "назови a.txt как b.txt",
+    "expected_goal": "RENAME_FILE",
+    "expected_fields": {
+      "source": "a.txt",
+      "destination": "b.txt"
+    }
+  },
+  {
+    "input": "сделай папку notes",
+    "expected_goal": "CREATE_DIRECTORY",
+    "expected_fields": {
+      "target": "notes"
+    }
+  },
+  {
+    "input": "переключись в Downloads",
+    "expected_goal": "CHANGE_DIRECTORY",
+    "expected_fields": {
+      "target": "Downloads"
+    }
+  },
+  {
+    "input": "сколько места жрет Downloads",
+    "expected_goal": "DIRECTORY_SIZE",
+    "expected_fields": {
+      "target": "Downloads"
+    }
+  },
+  {
+    "input": "что больше всего жрет место в Downloads",
+    "expected_goal": "FIND_LARGE_FILES",
+    "expected_fields": {
+      "target": "Downloads"
+    }
+  },
+  {
+    "input": "сбрось кеш npm",
+    "expected_goal": "CLEAR_CACHE",
+    "expected_fields": {
+      "target": "npm"
+    }
+  },
+  {
+    "input": "сколько процентов заряда",
+    "expected_goal": "SHOW_BATTERY"
+  },
+  {
+    "input": "какая сегодня дата",
+    "expected_goal": "SHOW_DATE"
+  },
+  {
+    "input": "какой сейчас пользователь",
+    "expected_goal": "WHO_AM_I"
+  },
+  {
+    "input": "имя этого мака",
+    "expected_goal": "SHOW_HOSTNAME"
+  },
+  {
+    "input": "purge npm cache",
+    "expected_goal": "CLEAR_CACHE",
+    "expected_fields": {
+      "target": "npm"
+    }
+  },
+  {
+    "input": "what takes the most space in Downloads",
+    "expected_goal": "FIND_LARGE_FILES",
+    "expected_fields": {
+      "target": "Downloads"
+    }
+  },
+  {
+    "input": "please fire up Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "can you track down package.json",
+    "expected_goal": "FIND_FILE",
+    "expected_fields": {
+      "target": "package.json"
+    }
+  },
+  {
+    "input": "будь ласка відкрий Telegram",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Telegram"
+    }
+  },
+  {
+    "input": "por favor abre Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "bitte öffne Finder",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Finder"
+    }
+  },
+  {
+    "input": "s'il vous plaît ouvre Chrome",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Chrome"
+    }
+  },
+  {
+    "input": "per favore apri Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "proszę otwórz Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "lütfen aç Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "alstublieft open Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "prosím otevři Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "من فضلك افتح Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "कृपया खोलो Safari",
+    "expected_goal": "OPEN_APP",
+    "expected_fields": {
+      "target": "Safari"
+    }
+  },
+  {
+    "input": "erstelle ordner notes",
+    "expected_goal": "CREATE_DIRECTORY",
+    "expected_fields": {
+      "target": "notes"
+    }
+  },
+  {
+    "input": "supprime Chrome",
+    "expected_goal": "REMOVE_APP",
+    "expected_fields": {
+      "target": "Chrome"
+    }
+  },
+  {
+    "input": "ابحث package.json",
+    "expected_goal": "FIND_FILE",
+    "expected_fields": {
+      "target": "package.json"
+    }
+  },
+  {
+    "input": "फ़ोल्डर बनाओ notes",
+    "expected_goal": "CREATE_DIRECTORY",
+    "expected_fields": {
+      "target": "notes"
+    }
+  },
+  {
+    "input": "kill 424242",
+    "expected_goal": "KILL_PROCESS",
+    "expected_fields": {
+      "pid": 424242
+    }
+  },
+  {
+    "input": "найди приложение Chrome",
+    "expected_goal": "FIND_APP",
+    "expected_fields": {
+      "target": "Chrome"
+    }
+  },
+  {
+    "input": "удали папку build",
+    "expected_goal": "DELETE_DIRECTORY",
+    "expected_fields": {
+      "target": "build"
+    }
+  },
+  {
+    "input": "включи bluetooth",
+    "expected_goal": "SET_BLUETOOTH_POWER",
+    "expected_fields": {
+      "target": "on"
+    }
+  },
+  {
+    "input": "выключи блютус",
+    "expected_goal": "SET_BLUETOOTH_POWER",
+    "expected_fields": {
+      "target": "off"
+    }
+  },
+  {
+    "input": "disable bluetoth",
+    "expected_goal": "SET_BLUETOOTH_POWER",
+    "expected_fields": {
+      "target": "off"
+    }
+  },
+  {
+    "input": "информация о системе",
+    "expected_goal": "SHOW_SYSTEM_INFO"
+  },
+  {
+    "input": "uptime",
+    "expected_goal": "SHOW_UPTIME"
+  },
+  {
+    "input": "memory usage",
+    "expected_goal": "SHOW_MEMORY"
+  },
+  {
+    "input": "какой процессор",
+    "expected_goal": "SHOW_CPU"
+  },
+  {
+    "input": "покажи ip адрес",
+    "expected_goal": "SHOW_NETWORK"
+  },
+  {
+    "input": "какой процесс занимает больше всего памяти",
+    "expected_goal": "LIST_PROCESSES",
+    "expected_fields": {
+      "target": "memory"
+    }
+  },
+  {
+    "input": "что жрет оперативку",
+    "expected_goal": "LIST_PROCESSES",
+    "expected_fields": {
+      "target": "memory"
+    }
+  },
+  {
+    "input": "which process uses the most memory",
+    "expected_goal": "LIST_PROCESSES",
+    "expected_fields": {
+      "target": "memory"
+    }
+  },
+  {
+    "input": "какой процесс грузит процессор",
+    "expected_goal": "LIST_PROCESSES",
+    "expected_fields": {
+      "target": "cpu"
+    }
+  },
+  {
+    "input": "включи AirDrop",
+    "expected_goal": "SET_AIRDROP_MODE",
+    "expected_fields": {
+      "target": "on"
+    }
+  },
+  {
+    "input": "выключи airdrop",
+    "expected_goal": "SET_AIRDROP_MODE",
+    "expected_fields": {
+      "target": "off"
+    }
+  },
+  {
+    "input": "AirDrop только для контактов",
+    "expected_goal": "SET_AIRDROP_MODE",
+    "expected_fields": {
+      "target": "contacts"
+    }
+  },
+  {
+    "input": "enable AirDrop for everyone",
+    "expected_goal": "SET_AIRDROP_MODE",
+    "expected_fields": {
+      "target": "everyone"
+    }
+  },
+  {
+    "input": "включи StageManager",
+    "expected_goal": "SET_STAGE_MANAGER",
+    "expected_fields": {
+      "target": "on"
+    }
+  },
+  {
+    "input": "turn off Stage Manager",
+    "expected_goal": "SET_STAGE_MANAGER",
+    "expected_fields": {
+      "target": "off"
+    }
+  },
+  {
+    "input": "turn the StageManager on",
+    "expected_goal": "SET_STAGE_MANAGER",
+    "expected_fields": {
+      "target": "on"
+    }
+  },
+  {
+    "input": "сделай curl запрос на https://www.fakenamegenerator.com/advanced.php?t=country&n%5B%5D=us&c%5B%5D=us&gen=50&age-min=19&age-max=29",
+    "expected_goal": "FETCH_URL",
+    "expected_fields": {
+      "target": "https://www.fakenamegenerator.com/advanced.php?t=country&n%5B%5D=us&c%5B%5D=us&gen=50&age-min=19&age-max=29"
+    }
+  },
+  {
+    "input": "отправь запрос на google.com",
+    "expected_goal": "FETCH_URL",
+    "expected_fields": {
+      "target": "https://google.com"
+    }
+  },
+  {
+    "input": "отправь запрос curl на google.com",
+    "expected_goal": "FETCH_URL",
+    "expected_fields": {
+      "target": "https://google.com"
+    }
+  },
+  {
+    "input": "покажи что занимает больше всего места в загрузках",
+    "expected_goal": "FIND_LARGE_FILES",
+    "expected_fields": {
+      "target": "Downloads",
+      "minimum_size_bytes": 0
+    }
+  },
+  {
+    "input": "найди все файлы больше 500 мегабайт в загрузках",
+    "expected_goal": "FIND_LARGE_FILES",
+    "expected_fields": {
+      "target": "Downloads",
+      "minimum_size_bytes": 524288000
+    }
+  },
+  {
+    "input": "найди на маке приложение Telegram",
+    "expected_goal": "FIND_APP",
+    "expected_fields": {
+      "target": "Telegram"
+    }
+  },
+  {
+    "input": "покажи процессы связанные с Chrome",
+    "expected_goal": "FIND_PROCESS",
+    "expected_fields": {
+      "target": "Chrome"
+    }
+  },
+  {
+    "input": "покажи последние 10 коммитов в этом проекте",
+    "expected_goal": "RUN_TOOL",
+    "expected_fields": {
+      "target": "git",
+      "argv": ["log", "-n", "10", "--oneline"]
+    }
+  },
+  {
+    "input": "какая сейчас ветка git",
+    "expected_goal": "RUN_TOOL",
+    "expected_fields": {
+      "target": "git",
+      "argv": ["rev-parse", "--abbrev-ref", "HEAD"]
+    }
+  },
+  {
+    "input": "покажи какие файлы изменены в git",
+    "expected_goal": "RUN_TOOL",
+    "expected_fields": {
+      "target": "git",
+      "argv": ["status", "--short"]
+    }
+  },
+  {
+    "input": "сколько весит текущая папка",
+    "expected_goal": "DIRECTORY_SIZE",
+    "expected_fields": {
+      "target": "."
+    }
+  },
+  {
+    "input": "1. найди здесь все файлы с расширением json",
+    "expected_goal": "FIND_FILES",
+    "expected_fields": {
+      "target": ".",
+      "file_extension": "json",
+      "limit": 500
+    }
+  },
+  {
+    "input": "у меня куда-то пропало место на диске, покажи что самое тяжелое",
+    "expected_goal": "FIND_LARGE_FILES",
+    "expected_fields": {
+      "target": "~",
+      "minimum_size_bytes": 0
+    }
+  },
+  {
+    "input": "хочу понять почему мак тормозит",
+    "expected_goal": "LIST_PROCESSES",
+    "expected_fields": {
+      "target": "diagnostic"
+    }
+  },
+  {
+    "input": "что у меня сейчас запущено из браузеров",
+    "expected_goal": "LIST_PROCESSES",
+    "expected_fields": {
+      "target": "browser"
+    }
+  },
+  {
+    "input": "21. найди README в текущем проекте",
+    "expected_goal": "FIND_FILES",
+    "expected_fields": {
+      "target": ".",
+      "name_contains": "readme",
+      "limit": 500
+    }
+  },
+  {
+    "input": "что за процесс 46272",
+    "expected_goal": "FIND_PROCESS",
+    "expected_fields": {
+      "pid": 46272
+    }
+  },
+  {
+    "input": "что за PID 46272",
+    "expected_goal": "FIND_PROCESS",
+    "expected_fields": {
+      "pid": 46272
+    }
+  },
+  {
+    "input": "hey tf turn Bluetooth off",
+    "expected_goal": "SET_BLUETOOTH_POWER",
+    "expected_fields": {
+      "target": "off"
+    }
+  },
+  {
+    "input": "кому принадлежит PID 46272",
+    "expected_goal": "FIND_PROCESS",
+    "expected_fields": {
+      "pid": 46272
+    }
+  },
+  {
+    "input": "show details for process 4242",
+    "expected_goal": "FIND_PROCESS",
+    "expected_fields": {
+      "pid": 4242
+    }
+  },
+  {
+    "input": "что изменилось в репозитории",
+    "expected_goal": "RUN_TOOL",
+    "expected_fields": {
+      "target": "git",
+      "argv": ["status", "--short"]
+    }
+  },
+  {
+    "input": "which files are modified",
+    "expected_goal": "RUN_TOOL",
+    "expected_fields": {
+      "target": "git",
+      "argv": ["status", "--short"]
+    }
+  },
+  {
+    "input": "search this project for .tsx files",
+    "expected_goal": "FIND_FILES",
+    "expected_fields": {
+      "target": ".",
+      "file_extension": "tsx",
+      "limit": 500
+    }
+  },
+  {
+    "input": "покажи где лежит Dockerfile в этом проекте",
+    "expected_goal": "FIND_FILES",
+    "expected_fields": {
+      "target": ".",
+      "name_contains": "dockerfile",
+      "limit": 500
+    }
+  },
+  {
+    "input": "show me where README is in this project",
+    "expected_goal": "FIND_FILES",
+    "expected_fields": {
+      "target": ".",
+      "name_contains": "readme",
+      "limit": 500
+    }
+  },
+  {
+    "input": "куда делось место на диске",
+    "expected_goal": "SHOW_DISK_USAGE"
+  },
+  {
+    "input": "how much battery is left",
+    "expected_goal": "SHOW_BATTERY"
+  },
+  {
+    "input": "what is the current working directory",
+    "expected_goal": "PRINT_WORKING_DIRECTORY"
+  },
+  {
+    "input": "what user is this shell running as",
+    "expected_goal": "WHO_AM_I"
+  },
+  {
+    "input": "какая версия macos",
+    "expected_goal": "SHOW_SYSTEM_INFO"
+  },
+  {
+    "input": "when was this mac restarted",
+    "expected_goal": "SHOW_UPTIME"
+  },
+  {
+    "input": "помоги понять почему мак медленный",
+    "expected_goal": "LIST_PROCESSES",
+    "expected_fields": {
+      "target": "diagnostic"
+    }
+  },
+  {
+    "input": "какие браузеры сейчас открыты",
+    "expected_goal": "LIST_PROCESSES",
+    "expected_fields": {
+      "target": "browser"
+    }
+  }
+]
