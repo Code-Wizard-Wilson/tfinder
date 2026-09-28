@@ -74,19 +74,19 @@ autostart = true
 The model may also be `english` or `typed-decisions`. TerFinder refuses a running daemon with a different checkpoint until `tf daemon stop` is used. For tests, `TERFINDER_IDLE_TIMEOUT` and `TERFINDER_MODEL` override the config when starting a daemon. Confirmation cannot be disabled through config.
 
 ```sh
-tf покажи, что лежит в Downloads
-tf напомни, в какой папке сейчас терминал
-tf покажи, что написано в README.md
-tf сделай копию a.txt в Documents
-tf мне сейчас нужен Safari, покажи его
+tf show me what's in Downloads
+tf remind me which directory the terminal is in
+tf show me what's in README.md
+tf copy a.txt to Documents
+tf I need Safari right now, open it
 tf what has grabbed TCP port 8765
 tf how bloated is Downloads
 tf what kind of Mac am I running
-tf какой процесс занимает больше всего памяти
-tf включи AirDrop
-tf выключи Stage Manager
-tf сделай curl запрос на 'https://example.com?a=1&b=2'
-tf ¿cuánta batería me queda?
+tf which process is using the most memory
+tf turn on AirDrop
+tf turn off Stage Manager
+tf make a curl request to 'https://example.com?a=1&b=2'
+tf how much battery do I have left?
 ```
 
 HTTP GET requests honor curl's standard `https_proxy`, lowercase `http_proxy`, `ALL_PROXY`, and `NO_PROXY` environment variables. Proxy selection is intentionally not accepted as free-form curl flags:
@@ -107,13 +107,13 @@ Add verbs or short phrases under one of the canonical groups `open`, `delete`, `
   "version": 1,
   "prefixes": ["please", "could you", "kindly"],
   "terms": {
-    "open": ["подними", "activate"],
-    "find": ["разыщи", "track down"],
-    "mkdir": ["заведи папку", "make a folder"]
+    "open": ["launch", "activate"],
+    "find": ["locate", "track down"],
+    "mkdir": ["create a folder", "make a folder"]
   },
   "rules": [
-    { "match": "сотри кеш {target}", "rewrite": "clear cache {target}" },
-    { "match": "где я оказался", "rewrite": "pwd" }
+    { "match": "wipe the {target} cache", "rewrite": "clear cache {target}" },
+    { "match": "where am I now", "rewrite": "pwd" }
   ]
 }
 ```
