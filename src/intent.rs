@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub enum Action {
     FindApp,
     RemoveApp,
+    RemoveAppCompletely,
     OpenApp,
     QuitApp,
     FindFile,
@@ -42,6 +43,7 @@ pub enum Action {
     ShowMemory,
     ShowCpu,
     ShowNetwork,
+    DiagnoseNetwork,
     FetchUrl,
     RunTool,
     Unknown,
@@ -223,6 +225,14 @@ pub const CAPABILITIES: &[Capability] = &[
         required: "app name",
         risk: Risk::Destructive,
         examples: &["удали Chrome", "uninstall Firefox"],
+    },
+    Capability {
+        action: Action::RemoveAppCompletely,
+        name: "REMOVE_APP_COMPLETELY",
+        description: "Move an app and its matched user Library data to Trash",
+        required: "app name",
+        risk: Risk::Destructive,
+        examples: &["полностью удали Zoom", "completely uninstall Firefox"],
     },
     Capability {
         action: Action::OpenApp,
@@ -524,6 +534,14 @@ pub const CAPABILITIES: &[Capability] = &[
         required: "none",
         risk: Risk::ReadOnly,
         examples: &["network info", "покажи ip адрес"],
+    },
+    Capability {
+        action: Action::DiagnoseNetwork,
+        name: "DIAGNOSE_NETWORK",
+        description: "Diagnose DNS, Wi-Fi, routing, packet loss, VPN, proxies, and listening ports",
+        required: "none",
+        risk: Risk::ReadOnly,
+        examples: &["почему интернет тормозит", "diagnose my slow internet"],
     },
     Capability {
         action: Action::FetchUrl,

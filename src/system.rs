@@ -1,5 +1,6 @@
 use crate::intent::FileType;
 use std::{
+    collections::HashSet,
     env,
     ffi::CString,
     fs, io,
@@ -7,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
     process::{Command, Output},
     sync::OnceLock,
-    time::{Duration, SystemTime},
+    time::{Duration, Instant, SystemTime},
 };
 
 pub fn home() -> io::Result<PathBuf> {
@@ -158,7 +159,55 @@ pub fn rename_no_replace(source: &Path, destination: &Path) -> io::Result<()> {
     }
 }
 
-pub fn trash(path: &Path) -> io::Result<PathBuf> {
+#[derive(Debug, PartialEq, Eq)]
+pub enum TrashResult {
+    Path(PathBuf),
+    Finder,
+}
+
+fn finder_can_trash(path: &Path) -> bool {
+    path.starts_with("/Applications")
+        && path.extension().is_some_and(|extension| extension == "app")
+}
+
+fn trash_with_finder(path: &Path) -> io::Result<()> {
+    // argv keeps the path out of the AppleScript source, so quotes and other
+    // characters in an app name cannot alter the script.
+    let output = Command::new("/usr/bin/osascript")
+        .args([
+            "-e",
+            "on run argv",
+            "-e",
+            "tell application \"Finder\" to delete POSIX file (item 1 of argv)",
+            "-e",
+            "end run",
+            "--",
+        ])
+        .arg(path)
+        .output()?;
+    if !output.status.success() {
+        let detail = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        let detail = if detail.is_empty() {
+            format!("osascript exited with {}", output.status)
+        } else {
+            detail
+        };
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            format!(
+                "Finder could not move the app to Trash: {detail}. Allow your terminal under System Settings → Privacy & Security → App Management, then try again"
+            ),
+        ));
+    }
+    if fs::symlink_metadata(path).is_ok() {
+        return Err(io::Error::other(
+            "Finder returned success, but the application is still in place",
+        ));
+    }
+    Ok(())
+}
+
+pub fn trash(path: &Path) -> io::Result<TrashResult> {
     if protected(path) {
         return Err(io::Error::other("protected broad path"));
     }
@@ -176,8 +225,14 @@ pub fn trash(path: &Path) -> io::Result<PathBuf> {
             trash.join(format!("{}{}", name.to_string_lossy(), suffix))
         };
         match rename_no_replace(path, &candidate) {
-            Ok(()) => return Ok(candidate),
+            Ok(()) => return Ok(TrashResult::Path(candidate)),
             Err(error) if error.kind() == io::ErrorKind::AlreadyExists => continue,
+            Err(error)
+                if error.kind() == io::ErrorKind::PermissionDenied && finder_can_trash(path) =>
+            {
+                trash_with_finder(path)?;
+                return Ok(TrashResult::Finder);
+            }
             Err(error) => return Err(error),
         }
     }
@@ -332,6 +387,158 @@ pub fn applications() -> io::Result<Vec<PathBuf>> {
     apps.sort();
     let _ = write_app_cache(stamp, &apps);
     Ok(apps)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AppCleanupItem {
+    pub category: &'static str,
+    pub path: PathBuf,
+    pub bytes: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AppCleanup {
+    pub app_name: String,
+    pub bundle_id: Option<String>,
+    pub items: Vec<AppCleanupItem>,
+}
+
+fn plist_string(path: &Path, key: &str) -> Option<String> {
+    let output = Command::new("/usr/libexec/PlistBuddy")
+        .args(["-c", &format!("Print :{key}")])
+        .arg(path)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let value = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    (!value.is_empty()).then_some(value)
+}
+
+fn app_identity(app: &Path) -> (String, Option<String>, Vec<String>) {
+    let info = app.join("Contents/Info.plist");
+    let stem = app
+        .file_stem()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+    let name = plist_string(&info, "CFBundleName").unwrap_or_else(|| stem.clone());
+    let bundle_id = plist_string(&info, "CFBundleIdentifier");
+    let mut terms = stem
+        .split(|character: char| !character.is_alphanumeric())
+        .chain(name.split(|character: char| !character.is_alphanumeric()))
+        .map(str::to_lowercase)
+        .filter(|term| term.chars().count() >= 4)
+        .filter(|term| !matches!(term.as_str(), "application" | "desktop" | "client"))
+        .collect::<Vec<_>>();
+    terms.sort();
+    terms.dedup();
+    (name, bundle_id, terms)
+}
+
+fn matches_app_leftover(
+    file_name: &str,
+    app_name: &str,
+    bundle_id: Option<&str>,
+    terms: &[String],
+) -> bool {
+    let candidate = file_name.to_lowercase();
+    let app_name = app_name.to_lowercase();
+    let exact_name = candidate == app_name
+        || candidate
+            .strip_suffix(".plist")
+            .is_some_and(|value| value == app_name)
+        || candidate
+            .strip_suffix(".savedstate")
+            .is_some_and(|value| value == app_name);
+    let identifier = bundle_id.is_some_and(|identifier| {
+        let identifier = identifier.to_lowercase();
+        candidate == identifier
+            || candidate
+                .strip_prefix(&identifier)
+                .is_some_and(|suffix| suffix.starts_with('.'))
+    });
+    exact_name
+        || identifier
+        || (!terms.is_empty() && terms.iter().all(|term| candidate.contains(term)))
+}
+
+fn launch_agent_matches(path: &Path, app: &Path, bundle_id: Option<&str>) -> bool {
+    let Ok(metadata) = fs::symlink_metadata(path) else {
+        return false;
+    };
+    if !metadata.is_file() || metadata.len() > 1_048_576 {
+        return false;
+    }
+    let Ok(content) = fs::read(path) else {
+        return false;
+    };
+    let content = String::from_utf8_lossy(&content).to_lowercase();
+    let app_path = app.to_string_lossy().to_lowercase();
+    content.contains(&app_path)
+        || bundle_id.is_some_and(|identifier| content.contains(&identifier.to_lowercase()))
+}
+
+/// Build a conservative, user-scoped uninstall plan. Only direct children of
+/// known ~/Library locations are considered; shared Group Containers and
+/// system-wide /Library helpers are deliberately excluded.
+pub fn app_cleanup(app: &Path) -> io::Result<AppCleanup> {
+    if app.extension().is_none_or(|extension| extension != "app") {
+        return Err(io::Error::other("target is not an application bundle"));
+    }
+    fs::symlink_metadata(app)?;
+    let (app_name, bundle_id, terms) = app_identity(app);
+    let home = home()?;
+    let library = home.join("Library");
+    let roots = [
+        ("Application Support", library.join("Application Support")),
+        ("Cache", library.join("Caches")),
+        ("Preferences", library.join("Preferences")),
+        ("Saved State", library.join("Saved Application State")),
+        ("HTTP Storage", library.join("HTTPStorages")),
+        ("WebKit Data", library.join("WebKit")),
+        ("Logs", library.join("Logs")),
+        ("Application Scripts", library.join("Application Scripts")),
+        ("Container", library.join("Containers")),
+        ("Launch Agent", library.join("LaunchAgents")),
+    ];
+    let mut items = vec![AppCleanupItem {
+        category: "Application",
+        path: app.to_path_buf(),
+        bytes: size(app, 500_000).ok(),
+    }];
+    let mut seen = HashSet::new();
+    seen.insert(app.to_path_buf());
+    for (category, root) in roots {
+        let Ok(entries) = fs::read_dir(&root) else {
+            continue;
+        };
+        for entry in entries.take(5_000).flatten() {
+            let path = entry.path();
+            let name = entry.file_name().to_string_lossy().to_string();
+            let matches_name = matches_app_leftover(&name, &app_name, bundle_id.as_deref(), &terms);
+            let matches_agent = category == "Launch Agent"
+                && launch_agent_matches(&path, app, bundle_id.as_deref());
+            if (matches_name || matches_agent) && seen.insert(path.clone()) {
+                items.push(AppCleanupItem {
+                    category,
+                    bytes: size(&path, 250_000).ok(),
+                    path,
+                });
+            }
+        }
+    }
+    items[1..].sort_by(|left, right| {
+        left.category
+            .cmp(right.category)
+            .then_with(|| left.path.cmp(&right.path))
+    });
+    Ok(AppCleanup {
+        app_name,
+        bundle_id,
+        items,
+    })
 }
 
 fn app_cache_path() -> io::Result<PathBuf> {
@@ -1288,13 +1495,18 @@ pub fn uptime_info() -> io::Result<String> {
     checked_text("uptime", &[])
 }
 
-fn human_bytes(bytes: u64) -> String {
+pub fn human_bytes(bytes: u64) -> String {
     const GIB: f64 = 1_073_741_824.0;
     const MIB: f64 = 1_048_576.0;
+    const KIB: f64 = 1024.0;
     if bytes >= 1_073_741_824 {
         format!("{:.1} GiB", bytes as f64 / GIB)
-    } else {
+    } else if bytes >= 1_048_576 {
         format!("{:.1} MiB", bytes as f64 / MIB)
+    } else if bytes >= 1024 {
+        format!("{:.1} KiB", bytes as f64 / KIB)
+    } else {
+        format!("{bytes} B")
     }
 }
 
@@ -1391,6 +1603,300 @@ pub fn network_info() -> io::Result<String> {
     Ok(format!("{default}{body}"))
 }
 
+#[derive(Debug, Clone, PartialEq)]
+struct PingStats {
+    transmitted: u32,
+    received: u32,
+    loss_percent: f32,
+    average_ms: Option<f32>,
+}
+
+fn parse_ping_stats(output: &str) -> Option<PingStats> {
+    let packets = output
+        .lines()
+        .find(|line| line.contains("packets transmitted") && line.contains("packet loss"))?;
+    let parts = packets.split(',').map(str::trim).collect::<Vec<_>>();
+    let transmitted = parts.first()?.split_whitespace().next()?.parse().ok()?;
+    let received = parts.get(1)?.split_whitespace().next()?.parse().ok()?;
+    let loss_percent = parts
+        .iter()
+        .find(|part| part.contains("packet loss"))?
+        .split('%')
+        .next()?
+        .split_whitespace()
+        .next_back()?
+        .parse()
+        .ok()?;
+    let average_ms = output
+        .lines()
+        .find(|line| line.contains("min/avg/max"))
+        .and_then(|line| line.split('=').nth(1))
+        .and_then(|values| values.trim().split('/').nth(1))
+        .and_then(|value| value.parse().ok());
+    Some(PingStats {
+        transmitted,
+        received,
+        loss_percent,
+        average_ms,
+    })
+}
+
+fn ping_target(label: &str, host: &str) -> (String, Option<PingStats>) {
+    let output = command(
+        "/sbin/ping",
+        &["-q", "-c", "4", "-i", "0.25", "-W", "1000", host],
+    );
+    let Ok(output) = output else {
+        return (format!("{label} ({host}): ping unavailable"), None);
+    };
+    let mut text = String::from_utf8_lossy(&output.stdout).into_owned();
+    text.push_str(&String::from_utf8_lossy(&output.stderr));
+    let stats = parse_ping_stats(&text);
+    let summary = match &stats {
+        Some(stats) => {
+            let latency = stats
+                .average_ms
+                .map(|value| format!(", avg {value:.1} ms"))
+                .unwrap_or_default();
+            format!(
+                "{label} ({host}): {:.1}% loss, {}/{} replies{latency}",
+                stats.loss_percent, stats.received, stats.transmitted
+            )
+        }
+        None => format!("{label} ({host}): no usable ping response"),
+    };
+    (summary, stats)
+}
+
+fn route_field(route: &str, name: &str) -> Option<String> {
+    route.lines().find_map(|line| {
+        line.trim()
+            .strip_prefix(name)
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .map(str::to_string)
+    })
+}
+
+fn dns_servers(output: &str) -> Vec<String> {
+    let mut seen = HashSet::new();
+    let mut servers = Vec::new();
+    for server in output
+        .lines()
+        .filter_map(|line| line.trim().strip_prefix("nameserver["))
+        .filter_map(|line| line.split_once(':').map(|(_, value)| value.trim()))
+        .filter(|value| !value.is_empty())
+    {
+        if seen.insert(server.to_string()) {
+            servers.push(server.to_string());
+        }
+        if servers.len() >= 8 {
+            break;
+        }
+    }
+    servers
+}
+
+fn active_vpns(output: &str) -> Vec<String> {
+    output
+        .lines()
+        .filter(|line| line.contains("(Connected)"))
+        .map(|line| {
+            line.split('"')
+                .nth(1)
+                .map(str::to_string)
+                .unwrap_or_else(|| line.trim().to_string())
+        })
+        .collect()
+}
+
+fn enabled_proxies(output: &str) -> Vec<&'static str> {
+    [
+        ("HTTPEnable", "HTTP"),
+        ("HTTPSEnable", "HTTPS"),
+        ("SOCKSEnable", "SOCKS"),
+        ("ProxyAutoConfigEnable", "automatic configuration"),
+        ("ProxyAutoDiscoveryEnable", "automatic discovery"),
+    ]
+    .into_iter()
+    .filter_map(|(key, label)| {
+        output
+            .lines()
+            .any(|line| line.trim() == format!("{key} : 1"))
+            .then_some(label)
+    })
+    .collect()
+}
+
+fn listening_tcp_ports(limit: usize) -> Vec<String> {
+    let Ok(output) = command("/usr/sbin/lsof", &["-nP", "-iTCP", "-sTCP:LISTEN", "-Fpcn"]) else {
+        return Vec::new();
+    };
+    let mut pid = String::new();
+    let mut process = String::new();
+    let mut listeners = Vec::new();
+    for line in String::from_utf8_lossy(&output.stdout).lines() {
+        let Some((field, value)) = line.split_at_checked(1) else {
+            continue;
+        };
+        match field {
+            "p" => pid = value.to_string(),
+            "c" => process = value.to_string(),
+            "n" if !value.is_empty() => {
+                listeners.push(format!("{value} · {process} · PID {pid}"));
+                if listeners.len() >= limit {
+                    break;
+                }
+            }
+            _ => {}
+        }
+    }
+    listeners.sort();
+    listeners.dedup();
+    listeners
+}
+
+pub fn network_diagnosis() -> io::Result<String> {
+    let route = checked_text("/sbin/route", &["-n", "get", "default"]).unwrap_or_default();
+    let default_interface = route_field(&route, "interface:").unwrap_or_else(|| "unknown".into());
+    let gateway = route_field(&route, "gateway:");
+
+    let wifi = wifi_device().unwrap_or_else(|_| "unknown".into());
+    let wifi_text = if wifi == "unknown" {
+        "Wi-Fi: hardware interface not found".to_string()
+    } else {
+        let details = checked_text("/sbin/ifconfig", &[&wifi]).unwrap_or_default();
+        let active = details.lines().any(|line| line.trim() == "status: active");
+        let address = details.lines().find_map(|line| {
+            line.trim()
+                .strip_prefix("inet ")
+                .and_then(|rest| rest.split_whitespace().next())
+        });
+        format!(
+            "Wi-Fi: {wifi} · {}{}",
+            if active { "active" } else { "inactive" },
+            address
+                .map(|value| format!(" · {value}"))
+                .unwrap_or_default()
+        )
+    };
+
+    let dns = checked_text("/usr/sbin/scutil", &["--dns"]).unwrap_or_default();
+    let servers = dns_servers(&dns);
+    let lookup_started = Instant::now();
+    let lookup = command(
+        "/usr/bin/dscacheutil",
+        &["-q", "host", "-a", "name", "example.com"],
+    );
+    let lookup_ms = lookup_started.elapsed().as_millis();
+    let lookup_ok = lookup.is_ok_and(|output| output.status.success() && !output.stdout.is_empty());
+
+    let physical_gateway = if wifi == "unknown" {
+        None
+    } else {
+        checked_text("/usr/sbin/ipconfig", &["getoption", &wifi, "router"]).ok()
+    };
+    let gateway_target = physical_gateway.as_deref().or(gateway.as_deref());
+    let (gateway_ping, gateway_stats) = gateway_target
+        .map(|host| ping_target("Gateway", host))
+        .unwrap_or_else(|| ("Gateway: not found".into(), None));
+    let (internet_ping, internet_stats) = ping_target("Internet", "1.1.1.1");
+
+    let vpn_output = checked_text("/usr/sbin/scutil", &["--nc", "list"]).unwrap_or_default();
+    let vpns = active_vpns(&vpn_output);
+    let proxy_output = checked_text("/usr/sbin/scutil", &["--proxy"]).unwrap_or_default();
+    let proxies = enabled_proxies(&proxy_output);
+    let listeners = listening_tcp_ports(20);
+
+    let mut findings = Vec::new();
+    if default_interface.starts_with("utun") {
+        findings.push(format!(
+            "Default traffic is routed through tunnel interface {default_interface}."
+        ));
+    }
+    if !vpns.is_empty() {
+        findings.push(format!(
+            "{} VPN connection(s) are active; compare performance with them paused.",
+            vpns.len()
+        ));
+    }
+    if !proxies.is_empty() {
+        findings.push(format!(
+            "Active proxy settings can add latency: {}.",
+            proxies.join(", ")
+        ));
+    }
+    if servers.is_empty() || !lookup_ok {
+        findings.push("DNS resolution failed or no resolver was reported.".into());
+    } else if lookup_ms > 250 {
+        findings.push(format!("DNS lookup is slow ({lookup_ms} ms)."));
+    }
+    for (label, stats) in [("gateway", gateway_stats), ("internet", internet_stats)] {
+        if let Some(stats) = stats {
+            if stats.loss_percent > 0.0 {
+                findings.push(format!(
+                    "ICMP packet loss to {label} is {:.1}% (some VPNs block ping).",
+                    stats.loss_percent
+                ));
+            }
+            if stats.average_ms.is_some_and(|latency| latency > 100.0) {
+                findings.push(format!("Latency to {label} is high."));
+            }
+        } else {
+            findings.push(format!("Could not measure packet loss to {label}."));
+        }
+    }
+    if findings.is_empty() {
+        findings
+            .push("No obvious DNS, routing, proxy, packet-loss, or latency issue found.".into());
+    }
+
+    let route_line = match gateway {
+        Some(gateway) => format!("Route: {default_interface} via {gateway}"),
+        None => format!("Route: {default_interface}"),
+    };
+    let dns_line = if servers.is_empty() {
+        format!("DNS: no resolvers found · example.com lookup {lookup_ms} ms · failed")
+    } else {
+        format!(
+            "DNS: {} · example.com lookup {lookup_ms} ms · {}",
+            servers.join(", "),
+            if lookup_ok { "ok" } else { "failed" }
+        )
+    };
+    let vpn_line = if vpns.is_empty() {
+        "VPN: none connected".to_string()
+    } else {
+        format!("VPN: {}", vpns.join(", "))
+    };
+    let proxy_line = if proxies.is_empty() {
+        "Proxy: off".to_string()
+    } else {
+        format!("Proxy: {}", proxies.join(", "))
+    };
+    let ports = if listeners.is_empty() {
+        "Listening TCP ports: none visible".to_string()
+    } else {
+        format!(
+            "Listening TCP ports (showing {}):\n{}",
+            listeners.len(),
+            listeners
+                .iter()
+                .map(|listener| format!("- {listener}"))
+                .collect::<Vec<_>>()
+                .join("\n")
+        )
+    };
+    let findings = findings
+        .iter()
+        .map(|finding| format!("- {finding}"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    Ok(format!(
+        "Network diagnosis\n{route_line}\n{wifi_text}\n{dns_line}\n{gateway_ping}\n{internet_ping}\n{vpn_line}\n{proxy_line}\n\n{ports}\n\nFindings:\n{findings}"
+    ))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1399,6 +1905,76 @@ mod tests {
         assert!(protected(Path::new("/")));
         assert!(protected(Path::new("/Applications/..")));
         assert!(!protected(Path::new("/tmp/terfinder-test")));
+    }
+    #[test]
+    fn finder_fallback_is_limited_to_application_bundles() {
+        assert!(finder_can_trash(Path::new("/Applications/Zoom.app")));
+        assert!(finder_can_trash(Path::new(
+            "/Applications/Utilities/Example.app"
+        )));
+        assert!(!finder_can_trash(Path::new("/Applications/notes.txt")));
+        assert!(!finder_can_trash(Path::new("/tmp/Zoom.app")));
+    }
+    #[test]
+    fn app_leftovers_require_a_specific_identity_match() {
+        let terms = vec!["google".to_string(), "chrome".to_string()];
+        assert!(matches_app_leftover(
+            "com.google.Chrome.plist",
+            "Google Chrome",
+            Some("com.google.Chrome"),
+            &terms
+        ));
+        assert!(!matches_app_leftover(
+            "com.google.Drive.plist",
+            "Google Chrome",
+            Some("com.google.Chrome"),
+            &terms
+        ));
+        let zoom = vec!["zoom".to_string()];
+        assert!(matches_app_leftover(
+            "ZoomUpdater",
+            "zoom.us",
+            Some("us.zoom.xos"),
+            &zoom
+        ));
+        assert!(matches_app_leftover(
+            "us.zoom.xos.binarycookies",
+            "zoom.us",
+            Some("us.zoom.xos"),
+            &zoom
+        ));
+        assert!(!matches_app_leftover(
+            "unrelated.plist",
+            "zoom.us",
+            Some("us.zoom.xos"),
+            &zoom
+        ));
+    }
+    #[test]
+    fn network_diagnostic_parsers_extract_signal() {
+        let ping = "4 packets transmitted, 3 packets received, 25.0% packet loss\n\
+                    round-trip min/avg/max/stddev = 10.000/20.500/30.000/2.000 ms\n";
+        assert_eq!(
+            parse_ping_stats(ping),
+            Some(PingStats {
+                transmitted: 4,
+                received: 3,
+                loss_percent: 25.0,
+                average_ms: Some(20.5),
+            })
+        );
+        assert_eq!(
+            dns_servers("resolver #1\n  nameserver[0] : 1.1.1.1\n  nameserver[1] : 8.8.8.8\n"),
+            vec!["1.1.1.1", "8.8.8.8"]
+        );
+        assert_eq!(
+            active_vpns("* (Connected) 123 VPN (com.example) \"Work VPN\" [VPN:com.example]\n"),
+            vec!["Work VPN"]
+        );
+        assert_eq!(
+            enabled_proxies("<dictionary> {\n  HTTPEnable : 1\n  HTTPSEnable : 0\n}"),
+            vec!["HTTP"]
+        );
     }
     #[test]
     fn pid_guard() {

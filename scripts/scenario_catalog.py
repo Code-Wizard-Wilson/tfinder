@@ -98,6 +98,20 @@ def build_catalog() -> list[Scenario]:
                 target=directory,
             )
 
+    for template in [
+        "полностью удали {app}",
+        "удали полностью {app}",
+        "completely uninstall {app}",
+        "fully remove {app}",
+    ]:
+        for app in apps:
+            catalog.add(
+                "applications/remove-completely",
+                template.format(app=app),
+                "REMOVE_APP_COMPLETELY",
+                target=app,
+            )
+
     for verb in terms["kill"]:
         for app in apps:
             catalog.add("applications/quit", f"{verb} {app}", "QUIT_APP", target=app)
@@ -570,6 +584,14 @@ def build_catalog() -> list[Scenario]:
             "ip 주소",
             "عنوان ip",
             "आईपी पता",
+        ],
+        "DIAGNOSE_NETWORK": [
+            "почему интернет тормозит",
+            "интернет медленный",
+            "диагностика интернета",
+            "diagnose my slow internet",
+            "why is my internet slow",
+            "why is my network slow",
         ],
     }
     for action, phrases in exact_phrases.items():

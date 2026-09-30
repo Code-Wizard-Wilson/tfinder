@@ -134,7 +134,7 @@ def capability_examples(audit: Audit, binary: pathlib.Path) -> None:
     result = invoke(binary, "capabilities", "--json")
     audit.check(result.returncode == 0, "capability registry command", result.stderr.strip())
     capabilities = json.loads(result.stdout)
-    audit.check(len(capabilities) == 40, "capability count", str(len(capabilities)))
+    audit.check(len(capabilities) == 42, "capability count", str(len(capabilities)))
     covered: set[str] = set()
     for capability in capabilities:
         action = capability["action"]

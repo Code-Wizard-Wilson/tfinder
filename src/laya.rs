@@ -719,7 +719,14 @@ pub fn classify(text: &str, start_daemon: bool, config: &Config) -> Result<Class
     let capabilities: Vec<_> = CAPABILITIES
         .iter()
         .filter(|c| match selected_domain {
-            Some("APP") => c.name.ends_with("_APP"),
+            Some("APP") => matches!(
+                c.action,
+                Action::FindApp
+                    | Action::RemoveApp
+                    | Action::RemoveAppCompletely
+                    | Action::OpenApp
+                    | Action::QuitApp
+            ),
             Some("PORT") => c.name.contains("PORT"),
             Some("PROCESS") => matches!(
                 c.action,
@@ -814,9 +821,11 @@ pub fn classify(text: &str, start_daemon: bool, config: &Config) -> Result<Class
         .ok_or("Laya returned an unknown action; no changes made.")?;
     match cap.action {
         Action::FindPortProcess | Action::KillPortProcess => intent.port = port_target,
-        Action::FindApp | Action::RemoveApp | Action::OpenApp | Action::QuitApp => {
-            intent.target = app_target
-        }
+        Action::FindApp
+        | Action::RemoveApp
+        | Action::RemoveAppCompletely
+        | Action::OpenApp
+        | Action::QuitApp => intent.target = app_target,
         Action::SetBluetoothPower | Action::SetAirDropMode | Action::SetStageManager => {
             intent.target = control_target(text, intent.action)
         }
@@ -847,6 +856,7 @@ pub fn classify(text: &str, start_daemon: bool, config: &Config) -> Result<Class
         | Action::ShowMemory
         | Action::ShowCpu
         | Action::ShowNetwork
+        | Action::DiagnoseNetwork
         | Action::RunTool => {}
         Action::ReadFile => {
             intent.target = file_target;
@@ -877,6 +887,7 @@ pub fn classify(text: &str, start_daemon: bool, config: &Config) -> Result<Class
             | Action::KillPortProcess
             | Action::FindApp
             | Action::RemoveApp
+            | Action::RemoveAppCompletely
             | Action::OpenApp
             | Action::QuitApp
             | Action::DirectorySize

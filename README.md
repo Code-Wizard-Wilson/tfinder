@@ -70,8 +70,10 @@ tf show me what's in Downloads
 tf show me what's in README.md
 tf copy a.txt to Documents
 tf open Safari
+tf completely uninstall Zoom
 tf what has grabbed TCP port 8765
 tf which process is using the most memory
+tf why is my internet slow
 tf how much battery do I have left?
 tf turn on AirDrop
 tf turn off Stage Manager
@@ -94,9 +96,9 @@ Session context is kept only in memory and is discarded when you exit.
 
 ## What it can do
 
-TerFinder currently provides 40 registered capabilities, including:
+TerFinder currently provides 42 registered capabilities, including:
 
-- Open, locate, and quit macOS apps
+- Open, locate, quit, and completely uninstall macOS apps with a user-data preview
 - Find, read, copy, move, rename, and Trash files
 - List and create directories
 - Resolve natural-language directory changes
@@ -104,6 +106,7 @@ TerFinder currently provides 40 registered capabilities, including:
 - Inspect processes and TCP listeners
 - Terminate a PID or a port's single listener with SIGTERM
 - Inspect disk, battery, memory, CPU, uptime, hostname, user, macOS version, and local addresses
+- Diagnose DNS, Wi-Fi, routing, packet loss, VPN/proxy state, and listening TCP ports
 - Find large files and calculate directory sizes
 - Clear supported pip/npm/yarn/pnpm/Homebrew caches
 - Control Bluetooth, AirDrop receiving, and Stage Manager
@@ -128,7 +131,8 @@ TerFinder is intentionally **not** a general-purpose shell agent.
 - Explicitly negated actions are refused
 - PID 0, PID 1, the CLI itself, and its parent process are protected
 - Critical roots such as `/`, `/System`, `/Applications`, `/Library`, `/Users`, and your home directory cannot be moved to Trash
-- File/app deletion uses `~/.Trash`; permanent deletion is not implemented
+- File/app deletion uses Trash; permission-protected apps fall back to Finder so macOS can request access. Permanent deletion is not implemented
+- Complete app removal is limited to matched direct children of known `~/Library` locations; shared Group Containers and system-wide `/Library` helpers are preserved
 
 `--yes` can skip confirmation for ordinary destructive actions, but it does **not** enable permanent deletion.
 File moves use macOS `renamex_np` with `RENAME_EXCL`, preventing a destination created after preview from being overwritten. Process targets are rechecked immediately before SIGTERM.
@@ -216,7 +220,7 @@ Run `tf knowledge` to inspect and validate the knowledge base. Rewritten phrases
 
 ## Testing
 
-The release gate covers **7,192 distinct user scenarios** across all 40 capabilities, plus a separate **5,000-run endurance loop**.
+The release gate covers **7,222 distinct user scenarios** across all 42 capabilities, plus a separate **5,000-run endurance loop**.
 
 Coverage includes multilingual and conversational requests, typos, negation, ambiguity, adversarial input, apps, files, directories, processes, ports, caches, URLs, system controls, HTTP limits, dry runs, and state checks.
 
@@ -249,7 +253,8 @@ python3 daemon/eval.py ./target/release/tf --conversational --summary
 - The multilingual semantic model uses roughly 647 MB on disk and about 644 MB while loaded on the validation Mac.
 - Trash moves across different filesystems may fail cleanly rather than falling back to permanent deletion.
 - Recursive search is bounded to the requested project or directory; there is no implicit full-volume scan.
-- Privileged app removal, permanent deletion, default-browser changes, arbitrary downloads, and arbitrary shell commands are not supported.
+- Complete app removal deliberately does not remove shared Group Containers or privileged system-wide helpers.
+- Permanent deletion, default-browser changes, arbitrary downloads, and arbitrary shell commands are not supported.
 
 ## License
 

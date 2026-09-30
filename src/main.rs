@@ -24,6 +24,7 @@ enum Plan {
     Open(PathBuf),
     OpenUrl(String),
     Trash(PathBuf),
+    RemoveAppCompletely(system::AppCleanup),
     Move(PathBuf, PathBuf),
     Terminate {
         pid: u32,
@@ -175,7 +176,11 @@ fn plan(intent: &Intent, dry: bool) -> Result<(Risk, Plan), String> {
                 }
             }
         }
-        Action::FindApp | Action::RemoveApp | Action::OpenApp | Action::QuitApp => {
+        Action::FindApp
+        | Action::RemoveApp
+        | Action::RemoveAppCompletely
+        | Action::OpenApp
+        | Action::QuitApp => {
             let target = required(&intent.target, "app name")?;
             let paths = system::find_apps(target).map_err(|e| e.to_string())?;
             if intent.action == Action::FindApp {
@@ -250,6 +255,14 @@ fn plan(intent: &Intent, dry: bool) -> Result<(Risk, Plan), String> {
                         return Err("System applications cannot be removed.".into());
                     }
                     Plan::Trash(path)
+                }
+                Action::RemoveAppCompletely => {
+                    if path.starts_with("/System") {
+                        return Err("System applications cannot be removed.".into());
+                    }
+                    Plan::RemoveAppCompletely(
+                        system::app_cleanup(&path).map_err(|error| error.to_string())?,
+                    )
                 }
                 _ => unreachable!(),
             }
@@ -648,6 +661,9 @@ fn plan(intent: &Intent, dry: bool) -> Result<(Risk, Plan), String> {
         Action::ShowMemory => Plan::Read(system::memory_info().map_err(|e| e.to_string())?),
         Action::ShowCpu => Plan::Read(system::cpu_info().map_err(|e| e.to_string())?),
         Action::ShowNetwork => Plan::Read(system::network_info().map_err(|e| e.to_string())?),
+        Action::DiagnoseNetwork => {
+            Plan::Read(system::network_diagnosis().map_err(|e| e.to_string())?)
+        }
         Action::FetchUrl => {
             let url = checked_http_url(required(&intent.target, "HTTP URL")?)?;
             Plan::FetchUrl(url)
@@ -679,6 +695,43 @@ fn describe(plan: &Plan) -> String {
         Plan::Open(path) => format!("Open {}", path.display()),
         Plan::OpenUrl(url) => format!("Open {url}"),
         Plan::Trash(path) => format!("Move {} to Trash", path.display()),
+        Plan::RemoveAppCompletely(cleanup) => {
+            let known_total = cleanup
+                .items
+                .iter()
+                .filter_map(|item| item.bytes)
+                .fold(0u64, u64::saturating_add);
+            let unknown = cleanup.items.iter().any(|item| item.bytes.is_none());
+            let bundle = cleanup
+                .bundle_id
+                .as_deref()
+                .map(|identifier| format!(" · {identifier}"))
+                .unwrap_or_default();
+            let entries = cleanup
+                .items
+                .iter()
+                .map(|item| {
+                    let size = item
+                        .bytes
+                        .map(system::human_bytes)
+                        .unwrap_or_else(|| "size unavailable".into());
+                    format!("- {} · {size} · {}", item.category, item.path.display())
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            format!(
+                "Completely uninstall {}{bundle}\nMove {} matched item(s) to Trash · {}{}\n{}\nShared Group Containers and system-wide /Library helpers are preserved.",
+                cleanup.app_name,
+                cleanup.items.len(),
+                system::human_bytes(known_total),
+                if unknown {
+                    " plus items of unknown size"
+                } else {
+                    ""
+                },
+                entries
+            )
+        }
         Plan::Move(from, to) => format!("Move {} → {}", from.display(), to.display()),
         Plan::Quit { label, processes } => {
             let pids = processes
@@ -868,10 +921,46 @@ fn execute(plan: Plan) -> Result<(), String> {
                 return Err(format!("open failed: {status}"));
             }
         }
-        Plan::Trash(path) => println!(
-            "Moved to {}",
-            system::trash(&path).map_err(|e| e.to_string())?.display()
-        ),
+        Plan::Trash(path) => match system::trash(&path).map_err(|e| e.to_string())? {
+            system::TrashResult::Path(destination) => {
+                println!("Moved to {}", destination.display())
+            }
+            system::TrashResult::Finder => println!("Moved to Trash via Finder"),
+        },
+        Plan::RemoveAppCompletely(cleanup) => {
+            let mut failures = Vec::new();
+            let mut moved = 0usize;
+            for item in cleanup.items {
+                if item.category == "Application" && !system::app_processes(&item.path).is_empty() {
+                    return Err(format!(
+                        "{} is running. Quit it and retry; no items were moved.",
+                        item.path.display()
+                    ));
+                }
+                if fs::symlink_metadata(&item.path).is_err() {
+                    continue;
+                }
+                match system::trash(&item.path) {
+                    Ok(system::TrashResult::Path(destination)) => {
+                        println!("Moved {} to {}", item.path.display(), destination.display());
+                        moved += 1;
+                    }
+                    Ok(system::TrashResult::Finder) => {
+                        println!("Moved {} to Trash via Finder", item.path.display());
+                        moved += 1;
+                    }
+                    Err(error) => failures.push(format!("{}: {error}", item.path.display())),
+                }
+            }
+            if !failures.is_empty() {
+                return Err(format!(
+                    "Moved {moved} item(s), but {} failed:\n{}",
+                    failures.len(),
+                    failures.join("\n")
+                ));
+            }
+            println!("Complete uninstall moved {moved} item(s) to Trash.");
+        }
         Plan::Move(from, to) => {
             system::rename_no_replace(&from, &to).map_err(|e| e.to_string())?;
             println!("Moved to {}", to.display());

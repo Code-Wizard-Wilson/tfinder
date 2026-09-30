@@ -44,6 +44,13 @@
     "expected_goal": "REMOVE_APP"
   },
   {
+    "input": "полностью удали Zoom",
+    "expected_goal": "REMOVE_APP_COMPLETELY",
+    "expected_fields": {
+      "target": "Zoom"
+    }
+  },
+  {
     "input": "change default browser to Google Chrome",
     "expected_goal": "UNSUPPORTED",
     "expected_fields": {
@@ -1284,6 +1291,10 @@
   {
     "input": "how much battery is left",
     "expected_goal": "SHOW_BATTERY"
+  },
+  {
+    "input": "почему интернет тормозит",
+    "expected_goal": "DIAGNOSE_NETWORK"
   },
   {
     "input": "what is the current working directory",

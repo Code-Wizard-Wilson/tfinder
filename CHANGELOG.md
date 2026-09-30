@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — 2026-09-30
+
+- Added complete app removal with a preflighted list and sizes for matched application support, cache, preference, saved-state, HTTP storage, WebKit, log, container, application-script, and user LaunchAgent items.
+- Added read-only slow-network diagnostics covering DNS latency, Wi-Fi state, default routing, gateway and internet packet loss, active VPN/proxy configuration, and listening TCP ports.
+- Added safe Finder fallback for permission-protected application bundles and deterministic multi-app removal phrasing.
+
 ## 0.6.0 — 2026-09-28
 
 - Added natural PID inspection, Git questions, recursive project-file search, browser discovery, and slow-Mac diagnostics.

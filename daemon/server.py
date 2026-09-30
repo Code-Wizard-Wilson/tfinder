@@ -31,6 +31,7 @@ def domain(name: str) -> str:
     if name in {
         "SHOW_DISK_USAGE", "SHOW_BATTERY", "SHOW_DATE", "WHO_AM_I", "SHOW_HOSTNAME",
         "SHOW_SYSTEM_INFO", "SHOW_UPTIME", "SHOW_MEMORY", "SHOW_CPU", "SHOW_NETWORK",
+        "DIAGNOSE_NETWORK",
     }:
         return "SYSTEM"
     if name == "SET_BLUETOOTH_POWER":
@@ -77,6 +78,7 @@ DOMAIN_LABELS = {
 ACTION_LABELS = {
     "FIND_APP": "locate",
     "REMOVE_APP": "uninstall",
+    "REMOVE_APP_COMPLETELY": "complete uninstall",
     "OPEN_APP": "launch",
     "QUIT_APP": "close",
     "FIND_FILE": "locate file",
@@ -113,12 +115,14 @@ ACTION_LABELS = {
     "SHOW_MEMORY": "RAM usage",
     "SHOW_CPU": "CPU details",
     "SHOW_NETWORK": "network addresses",
+    "DIAGNOSE_NETWORK": "network diagnosis",
     "RUN_TOOL": "developer tool",
 }
 
 ACTION_CRITERIA = {
     "FIND_APP": "locate where the named application is installed",
     "REMOVE_APP": "uninstall or move the named application to Trash",
+    "REMOVE_APP_COMPLETELY": "move the named application and its matched user Library data to Trash",
     "OPEN_APP": "make the named application running and visible",
     "QUIT_APP": "stop the named running application but keep it installed",
     "FIND_FILE": "find the named file",
@@ -155,6 +159,7 @@ ACTION_CRITERIA = {
     "SHOW_MEMORY": "report total and currently used RAM or computer memory",
     "SHOW_CPU": "report processor model and core counts",
     "SHOW_NETWORK": "report local network interfaces and IP addresses",
+    "DIAGNOSE_NETWORK": "diagnose a slow connection using DNS, Wi-Fi, routing, packet loss, VPN, proxy and port checks",
     "RUN_TOOL": "run a supported git, brew or cargo operation",
 }
 

@@ -465,6 +465,14 @@ fn conversational(text: &str, flat: &str) -> Option<Intent> {
     }
 
     if let Some(app) = system::mentioned_app(flat) {
+        if contains_any(&[
+            "feel like using",
+            "сейчас нужен",
+            "сейчас нужна",
+            "voudrais utiliser",
+        ]) {
+            return Some(Intent::target(Action::OpenApp, app));
+        }
         if lower.contains("installed")
             && contains_any(&[
                 "do not want",
@@ -901,6 +909,54 @@ fn size_target(object: &str) -> Option<String> {
     system::existing_dir(object).map(|path| path.display().to_string())
 }
 
+fn complete_app_removal(text: &str) -> Option<Intent> {
+    let trimmed = text.trim();
+    let lower = trimmed.to_lowercase();
+    let prefixes = [
+        "полностью удали ",
+        "полностью удалить ",
+        "удали полностью ",
+        "удалить полностью ",
+        "completely uninstall ",
+        "completely remove ",
+        "fully uninstall ",
+        "fully remove ",
+        "uninstall completely ",
+        "remove completely ",
+    ];
+    let prefix = prefixes
+        .into_iter()
+        .find(|prefix| lower.starts_with(prefix))?;
+    let raw_target = &trimmed[prefix.len()..];
+    let target = lexicon::strip_app_prefix(&lexicon::strip_object_filler(raw_target));
+    let safe_name = !target.is_empty()
+        && !lexicon::is_vague_object(&target)
+        && !target.contains(['/', '~'])
+        && target.split_whitespace().count() <= 8
+        && target.chars().all(|character| {
+            character.is_alphanumeric()
+                || character.is_whitespace()
+                || matches!(character, '-' | '_' | '.' | '+' | '&' | '\'' | '(' | ')')
+        });
+    safe_name.then(|| Intent::target(Action::RemoveAppCompletely, target))
+}
+
+fn slow_internet_request(lower: &str) -> bool {
+    let internet = lower.contains("интернет")
+        || lower.contains("internet")
+        || lower.contains("network")
+        || lower.contains("wi-fi")
+        || lower.contains("wifi");
+    let diagnostic = lower.contains("тормозит")
+        || lower.contains("медлен")
+        || lower.contains("slow")
+        || lower.contains("почему")
+        || lower.contains("diagnos")
+        || lower.contains("диагност")
+        || lower.contains("проблем");
+    internet && diagnostic
+}
+
 /// Strict deterministic rules. `Ok(None)` means the request is outside the
 /// known phrasings so the caller may fall back to the model. `Err` is an
 /// explicit refusal with a reason.
@@ -916,6 +972,27 @@ fn strict(text: &str, flat: &str) -> Result<Option<Intent>, String> {
     let first = lexicon::verb(first_raw);
     let has = |items: &[&str]| items.iter().any(|x| w.iter().any(|y| y == x));
     let lower = text.to_lowercase();
+
+    if let Some(intent) = complete_app_removal(text) {
+        return Ok(Some(intent));
+    }
+    if slow_internet_request(&lower) {
+        if [
+            "не провер",
+            "не диагност",
+            "do not diagnose",
+            "don't diagnose",
+            "dont diagnose",
+        ]
+        .iter()
+        .any(|marker| lower.contains(marker))
+        {
+            return Err(
+                "The network diagnosis is explicitly negated. Nothing was executed.".into(),
+            );
+        }
+        return Ok(Some(Intent::new(Action::DiagnoseNetwork)));
+    }
 
     if let Some(sort) = process_ranking(&lower) {
         return Ok(Some(Intent::target(Action::ListProcesses, sort)));
@@ -2021,6 +2098,9 @@ fn exact_read_only_action(input: &str) -> Option<Action> {
     ) {
         return Some(Action::ShowDate);
     }
+    if key == "how long has this laptop been awake" {
+        return Some(Action::ShowUptime);
+    }
     if matches!(
         key.as_str(),
         "what is this machine called" | "что за имя у этого мака"
@@ -2083,10 +2163,16 @@ pub fn parse(input: &str) -> Option<Intent> {
     if let Some(action) = exact_read_only_action(input) {
         return Some(Intent::new(action));
     }
+    if let Some(intent) = complete_app_removal(input) {
+        return Some(intent);
+    }
     let text = prepared(input);
     let flat = lexicon::normalize_text(&text);
     if explicitly_negated_action(&flat) {
         return None;
+    }
+    if let Some(intent) = complete_app_removal(&text) {
+        return Some(intent);
     }
     if let Some(intent) = http_get_request(&text).ok().flatten() {
         return Some(intent);
@@ -2133,12 +2219,18 @@ pub fn parse_outcome(input: &str) -> Option<Parsed> {
     if let Some(action) = exact_read_only_action(input) {
         return Some(Parsed::Intent(Intent::new(action)));
     }
+    if let Some(intent) = complete_app_removal(input) {
+        return Some(Parsed::Intent(intent));
+    }
     let text = prepared(input);
     let flat = lexicon::normalize_text(&text);
     if explicitly_negated_action(&flat) {
         return Some(Parsed::Refused(
             "The request is explicitly negated. Nothing was executed.".into(),
         ));
+    }
+    if let Some(intent) = complete_app_removal(&text) {
+        return Some(Parsed::Intent(intent));
     }
     match http_get_request(&text) {
         Ok(Some(intent)) => return Some(Parsed::Intent(intent)),
@@ -2350,15 +2442,22 @@ fn implied_open(text: &str) -> Option<Intent> {
 
 pub fn has_multiple_steps(input: &str) -> bool {
     let lower = input.to_lowercase();
-    [" и ", " потом ", " then ", " and then ", " а потом "]
+    [" и ", " потом ", " and then ", " then ", " а потом "]
         .iter()
         .any(|separator| lower.contains(separator))
+        || (lower.contains(" and ")
+            && ["remove ", "uninstall ", "delete ", "get rid of "]
+                .iter()
+                .any(|verb| lower.trim_start().starts_with(verb)))
 }
 
 pub fn parse_multi_step(input: &str) -> Option<Vec<Intent>> {
     let input = input.trim();
+    if unsafe_shell_syntax(input) {
+        return None;
+    }
     let lower = input.to_lowercase();
-    let separator = [" и ", " then ", " а потом "]
+    let separator = [" и ", " and then ", " then ", " а потом ", " and "]
         .into_iter()
         .find(|separator| lower.contains(separator))?;
     let split = lower.find(separator)?;
@@ -2366,6 +2465,34 @@ pub fn parse_multi_step(input: &str) -> Option<Vec<Intent>> {
     let after = &input[split + separator.len()..];
     let second_text = after.to_lowercase();
     let before_lower = before.to_lowercase();
+    let first = parse(before)?;
+
+    // A single destructive verb can govern a short list of application names:
+    // "удали Roblox и Roblox Studio" / "remove VLC and Zoom". Keep this
+    // deliberately limited to app removal. Both targets are resolved and
+    // preflighted by run_multi_step before either one is changed.
+    if first.action == Action::RemoveApp {
+        if let Some(second) = parse(after) {
+            if second.action == Action::RemoveApp {
+                return Some(vec![first, second]);
+            }
+            return None;
+        }
+        let target = lexicon::strip_app_prefix(&lexicon::strip_object_filler(after));
+        let plain_name = !target.is_empty()
+            && !lexicon::is_vague_object(&target)
+            && target.split_whitespace().count() <= 8
+            && target.chars().all(|character| {
+                character.is_alphanumeric()
+                    || character.is_whitespace()
+                    || matches!(character, '-' | '_' | '.' | '+' | '&' | '\'' | '(' | ')')
+            });
+        if plain_name {
+            return Some(vec![first, Intent::target(Action::RemoveApp, target)]);
+        }
+        return None;
+    }
+
     if (before_lower.starts_with("find ") || before_lower.starts_with("найди "))
         && ["uninstall it", "remove it", "удали его", "снеси его"].contains(&second_text.trim())
     {
@@ -2386,7 +2513,6 @@ pub fn parse_multi_step(input: &str) -> Option<Vec<Intent>> {
             ]);
         }
     }
-    let first = parse(before)?;
     if first.action == Action::FindPortProcess
         && [
             "выключи",
@@ -2475,6 +2601,22 @@ mod tests {
             "I would like to remove Google Chrome",
         ] {
             assert_eq!(action(phrase), Action::RemoveApp, "{phrase}");
+        }
+        for phrase in [
+            "полностью удали Zoom",
+            "удали полностью Zoom",
+            "completely uninstall Firefox",
+            "fully remove VLC",
+        ] {
+            assert_eq!(action(phrase), Action::RemoveAppCompletely, "{phrase}");
+        }
+        for phrase in [
+            "почему интернет тормозит",
+            "интернет медленный",
+            "diagnose my slow internet",
+            "why is my network slow",
+        ] {
+            assert_eq!(action(phrase), Action::DiagnoseNetwork, "{phrase}");
         }
         for phrase in [
             "кто на 8765",
@@ -2967,8 +3109,21 @@ mod tests {
             ("berapa persen baterai", Action::ShowBattery),
             ("what's the time", Action::ShowDate),
             ("what is this machine called", Action::ShowHostname),
+            ("how long has this laptop been awake", Action::ShowUptime),
         ] {
             assert_eq!(action(phrase), expected, "{phrase}");
+        }
+        for phrase in [
+            "I feel like using Safari right now",
+            "Мне сейчас нужен Safari, покажи его",
+            "Je voudrais utiliser Safari maintenant",
+        ] {
+            match parse_outcome(phrase) {
+                Some(Parsed::Intent(intent)) => {
+                    assert_eq!(intent.action, Action::OpenApp, "{phrase}")
+                }
+                other => panic!("no conversational app match for {phrase}: {other:?}"),
+            }
         }
     }
 
@@ -3100,6 +3255,35 @@ mod tests {
         assert_eq!(steps[1].action, Action::OpenApp);
         assert_eq!(steps[1].target.as_deref(), Some("Chrome"));
         assert!(parse_multi_step("найди самые большие файлы и удали их").is_none());
+    }
+
+    #[test]
+    fn coordinated_app_removal_is_typed() {
+        let steps = parse_multi_step("удали Roblox и Roblox Studio").unwrap();
+        assert_eq!(steps.len(), 2);
+        assert!(steps.iter().all(|step| step.action == Action::RemoveApp));
+        assert_eq!(steps[0].target.as_deref(), Some("Roblox"));
+        assert_eq!(steps[1].target.as_deref(), Some("Roblox Studio"));
+
+        let steps = parse_multi_step("remove VLC and remove Zoom").unwrap();
+        assert!(steps.iter().all(|step| step.action == Action::RemoveApp));
+        assert_eq!(steps[0].target.as_deref(), Some("VLC"));
+        assert_eq!(steps[1].target.as_deref(), Some("Zoom"));
+
+        assert!(parse_multi_step("удали Roblox и $(touch /tmp/pwned)").is_none());
+        assert!(parse_multi_step("удали Roblox и очисти кеш npm").is_none());
+    }
+
+    #[test]
+    fn network_diagnosis_respects_negation() {
+        assert!(matches!(
+            parse_outcome("не проверяй почему интернет тормозит"),
+            Some(Parsed::Refused(_))
+        ));
+        assert!(matches!(
+            parse_outcome("do not diagnose my slow internet"),
+            Some(Parsed::Refused(_))
+        ));
     }
 }
 
