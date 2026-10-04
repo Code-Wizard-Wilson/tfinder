@@ -12,6 +12,7 @@ from server import classify, questions, unavailable_anchor
 
 CAPABILITIES = [
     {"name": "REMOVE_APP", "description": "Move app to Trash", "examples": ["удали Chrome"]},
+    {"name": "UPDATE_APP", "description": "Update a supported app", "examples": ["обнови opencode"]},
     {"name": "FIND_PORT_PROCESS", "description": "Find TCP listener", "examples": ["кто на 8765"]},
 ]
 
@@ -30,6 +31,7 @@ class ServerTests(unittest.TestCase):
     def test_registry_drives_questions(self):
         self.assertIn("domain", questions(CAPABILITIES))
         self.assertIn("uninstall", questions(CAPABILITIES, "APP")["action"]["criteria"])
+        self.assertIn("update application", questions(CAPABILITIES, "APP")["action"]["criteria"])
         self.assertIn("inspect port", questions(CAPABILITIES, "PORT")["action"]["criteria"])
 
     def test_typed_choice(self):

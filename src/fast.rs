@@ -1717,6 +1717,28 @@ fn run_tool(program: &str, args: &[&str]) -> Intent {
     intent
 }
 
+/// App updates are deliberately opt-in per application. This keeps natural
+/// language from turning into an arbitrary package-manager or shell command.
+fn natural_app_update(text: &str) -> Option<Intent> {
+    let normalized = lexicon::normalize_text(text);
+    matches!(
+        normalized.as_str(),
+        "обнови opencode"
+            | "обновить opencode"
+            | "обнови open code"
+            | "обновить open code"
+            | "обнови опенкод"
+            | "обновить опенкод"
+            | "update opencode"
+            | "upgrade opencode"
+            | "update open code"
+            | "upgrade open code"
+            | "opencode update"
+            | "opencode upgrade"
+    )
+    .then(|| Intent::target(Action::UpdateApp, "opencode"))
+}
+
 fn natural_git_request(text: &str) -> Option<Intent> {
     let lower = text.to_lowercase();
     let mentions_git = lower.contains("git")
@@ -2180,6 +2202,9 @@ pub fn parse(input: &str) -> Option<Intent> {
     if let Some(intent) = natural_git_request(&text) {
         return Some(intent);
     }
+    if let Some(intent) = natural_app_update(&text) {
+        return Some(intent);
+    }
     if let Some(intent) = natural_contextual_request(&text, &flat) {
         return Some(intent);
     }
@@ -2238,6 +2263,9 @@ pub fn parse_outcome(input: &str) -> Option<Parsed> {
         Ok(None) => {}
     }
     if let Some(intent) = natural_git_request(&text) {
+        return Some(Parsed::Intent(intent));
+    }
+    if let Some(intent) = natural_app_update(&text) {
         return Some(Parsed::Intent(intent));
     }
     if let Some(intent) = natural_contextual_request(&text, &flat) {
@@ -2610,6 +2638,18 @@ mod tests {
         ] {
             assert_eq!(action(phrase), Action::RemoveAppCompletely, "{phrase}");
         }
+        for phrase in [
+            "обнови opencode",
+            "обновить OpenCode",
+            "обнови опенкод",
+            "update opencode",
+            "opencode upgrade",
+        ] {
+            let intent = parse(phrase).unwrap_or_else(|| panic!("no match for {phrase}"));
+            assert_eq!(intent.action, Action::UpdateApp, "{phrase}");
+            assert_eq!(intent.target.as_deref(), Some("opencode"), "{phrase}");
+        }
+        assert!(parse("как обновить opencode").is_none());
         for phrase in [
             "почему интернет тормозит",
             "интернет медленный",

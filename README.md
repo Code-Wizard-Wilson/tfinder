@@ -96,9 +96,10 @@ Session context is kept only in memory and is discarded when you exit.
 
 ## What it can do
 
-TerFinder currently provides 42 registered capabilities, including:
+TerFinder currently provides 43 registered capabilities, including:
 
 - Open, locate, quit, and completely uninstall macOS apps with a user-data preview
+- Update OpenCode through its trusted built-in self-updater
 - Find, read, copy, move, rename, and Trash files
 - List and create directories
 - Resolve natural-language directory changes

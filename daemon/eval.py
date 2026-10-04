@@ -12,7 +12,7 @@ FIXTURE = "conversational.json" if "--conversational" in sys.argv else "intents.
 CASES = json.loads((ROOT / "tests/fixtures" / FIXTURE).read_text())
 BINARY = Path(sys.argv[1]) if len(sys.argv) > 1 and not sys.argv[1].startswith("--") else ROOT / "target/release/tf"
 DESTRUCTIVE = {"REMOVE_APP", "DELETE_FILE", "DELETE_DIRECTORY", "MOVE_FILE", "RENAME_FILE",
-               "KILL_PROCESS", "KILL_PORT_PROCESS", "CLEAR_CACHE", "QUIT_APP"}
+               "KILL_PROCESS", "KILL_PORT_PROCESS", "CLEAR_CACHE", "QUIT_APP", "UPDATE_APP"}
 
 
 def interpret(text: str, fast: bool):

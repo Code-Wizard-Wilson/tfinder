@@ -726,6 +726,7 @@ pub fn classify(text: &str, start_daemon: bool, config: &Config) -> Result<Class
                     | Action::RemoveAppCompletely
                     | Action::OpenApp
                     | Action::QuitApp
+                    | Action::UpdateApp
             ),
             Some("PORT") => c.name.contains("PORT"),
             Some("PROCESS") => matches!(

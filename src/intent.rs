@@ -8,6 +8,7 @@ pub enum Action {
     RemoveAppCompletely,
     OpenApp,
     QuitApp,
+    UpdateApp,
     FindFile,
     FindFiles,
     OpenFile,
@@ -249,6 +250,14 @@ pub const CAPABILITIES: &[Capability] = &[
         required: "app name",
         risk: Risk::Destructive,
         examples: &["закрой Telegram", "останови Discord"],
+    },
+    Capability {
+        action: Action::UpdateApp,
+        name: "UPDATE_APP",
+        description: "Update a supported app with its trusted self-updater",
+        required: "supported app name",
+        risk: Risk::Destructive,
+        examples: &["обнови opencode", "update opencode"],
     },
     Capability {
         action: Action::FindFile,

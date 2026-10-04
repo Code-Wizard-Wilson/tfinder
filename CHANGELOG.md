@@ -2,6 +2,7 @@
 
 ## Unreleased — 2026-09-30
 
+- Added `tf обнови opencode` / `tf update opencode` with a preflighted, confirmed call to OpenCode's trusted self-updater and post-update version verification.
 - Added complete app removal with a preflighted list and sizes for matched application support, cache, preference, saved-state, HTTP storage, WebKit, log, container, application-script, and user LaunchAgent items.
 - Added read-only slow-network diagnostics covering DNS latency, Wi-Fi state, default routing, gateway and internet packet loss, active VPN/proxy configuration, and listening TCP ports.
 - Added safe Finder fallback for permission-protected application bundles and deterministic multi-app removal phrasing.

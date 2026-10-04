@@ -386,6 +386,13 @@
     }
   },
   {
+    "input": "обнови opencode",
+    "expected_goal": "UPDATE_APP",
+    "expected_fields": {
+      "target": "opencode"
+    }
+  },
+  {
     "input": "change default browser to Firefox",
     "expected_goal": "UNSUPPORTED",
     "expected_fields": {

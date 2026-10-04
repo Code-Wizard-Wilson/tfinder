@@ -112,6 +112,22 @@ def build_catalog() -> list[Scenario]:
                 target=app,
             )
 
+    for phrase in [
+        "обнови opencode",
+        "обновить opencode",
+        "обнови OpenCode",
+        "обнови open code",
+        "обновить open code",
+        "обнови опенкод",
+        "обновить опенкод",
+        "update opencode",
+        "upgrade opencode",
+        "update open code",
+        "upgrade open code",
+        "opencode upgrade",
+    ]:
+        catalog.add("applications/update", phrase, "UPDATE_APP", target="opencode")
+
     for verb in terms["kill"]:
         for app in apps:
             catalog.add("applications/quit", f"{verb} {app}", "QUIT_APP", target=app)

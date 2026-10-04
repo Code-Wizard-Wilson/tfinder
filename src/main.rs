@@ -51,6 +51,11 @@ enum Plan {
         program: String,
         args: Vec<String>,
     },
+    UpdateCli {
+        label: String,
+        executable: PathBuf,
+        before_version: String,
+    },
 }
 
 fn help() {
@@ -265,6 +270,40 @@ fn plan(intent: &Intent, dry: bool) -> Result<(Risk, Plan), String> {
                     )
                 }
                 _ => unreachable!(),
+            }
+        }
+        Action::UpdateApp => {
+            let target = required(&intent.target, "app name")?;
+            let normalized = target
+                .to_lowercase()
+                .chars()
+                .filter(|character| character.is_alphanumeric())
+                .collect::<String>();
+            if !matches!(normalized.as_str(), "opencode" | "опенкод") {
+                return Err(format!(
+                    "No trusted updater is registered for {target}. No changes made."
+                ));
+            }
+            let executable = system::executable("opencode")
+                .ok_or("OpenCode is not installed or is not available on PATH.")?;
+            let output = Command::new(&executable)
+                .arg("--version")
+                .output()
+                .map_err(|error| format!("Could not inspect OpenCode: {error}"))?;
+            if !output.status.success() {
+                return Err(format!(
+                    "Could not inspect OpenCode version: {}",
+                    String::from_utf8_lossy(&output.stderr).trim()
+                ));
+            }
+            let before_version = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if before_version.is_empty() {
+                return Err("OpenCode returned an empty version; no changes made.".into());
+            }
+            Plan::UpdateCli {
+                label: "OpenCode".into(),
+                executable,
+                before_version,
             }
         }
         Action::FindFile => {
@@ -784,6 +823,14 @@ fn describe(plan: &Plan) -> String {
                 format!("Run {program} {}", args.join(" "))
             }
         }
+        Plan::UpdateCli {
+            label,
+            executable,
+            before_version,
+        } => format!(
+            "Update {label} · current version {before_version} · run {} upgrade",
+            executable.display()
+        ),
     }
 }
 
@@ -1066,6 +1113,35 @@ fn execute(plan: Plan) -> Result<(), String> {
             }
             if !output.status.success() {
                 return Err(format!("{program} exited with {}", output.status));
+            }
+        }
+        Plan::UpdateCli {
+            label,
+            executable,
+            before_version,
+        } => {
+            let status = Command::new(&executable)
+                .arg("upgrade")
+                .status()
+                .map_err(|error| format!("Could not update {label}: {error}"))?;
+            if !status.success() {
+                return Err(format!("{label} updater exited with {status}"));
+            }
+            let output = Command::new(&executable)
+                .arg("--version")
+                .output()
+                .map_err(|error| format!("Could not verify {label}: {error}"))?;
+            if !output.status.success() {
+                return Err(format!(
+                    "{label} updater completed, but version verification failed: {}",
+                    String::from_utf8_lossy(&output.stderr).trim()
+                ));
+            }
+            let after_version = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if after_version == before_version {
+                println!("{label} is already up to date ({after_version}).");
+            } else {
+                println!("{label} updated: {before_version} -> {after_version}.");
             }
         }
     }
@@ -1846,6 +1922,12 @@ mod tests {
             }),
             "Send SIGTERM to PID 12345"
         );
+    }
+
+    #[test]
+    fn arbitrary_apps_cannot_reach_an_updater() {
+        let intent = Intent::target(Action::UpdateApp, "Chrome");
+        assert!(plan(&intent, true).is_err());
     }
 
     #[test]
